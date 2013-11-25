@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include <platform.h>
-// #include <mips.h>
+#include <mips.h>
 #include <memory.h>
 #include <safemem.h>
 #include <stdio.h>
@@ -51,7 +51,6 @@ static void usage(char *command)
  */
 shellcmd xsh_memstat(int nargs, char *args[])
 {
-#if 0
     int i;
     tid_typ tid;                /* thread to dump memlist of      */
     char print;                 /* print region free/alloc lists  */
@@ -123,11 +122,11 @@ shellcmd xsh_memstat(int nargs, char *args[])
             printFreeList(&(thrtab[tid].memlist), thrtab[tid].name);
         }
     }
-#endif
+
     return 0;
 }
 
-#if 0
+
 static void printMemUsage(void)
 {
     int i;
@@ -280,4 +279,4 @@ static void printFreeList(struct memblock *base, char *ident)
     printf("\n");
 }
 
-#endif
+
