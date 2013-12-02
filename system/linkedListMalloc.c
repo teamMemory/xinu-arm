@@ -4,6 +4,19 @@
 */
 
 #include <linkedListMalloc.h>
+#include <stdlib.h>
+
+struct Node * root;
+
+void insertNode(uint nbytes)
+{
+	
+}
+
+void removeNode(uint idx)
+{
+
+}
 
 void * linkedListMalloc(uint nbytes)
 {
@@ -13,5 +26,5 @@ void * linkedListMalloc(uint nbytes)
 		return NULL;
 	}
 
-
+	
 }
