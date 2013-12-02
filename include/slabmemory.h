@@ -10,7 +10,8 @@
 
 #include <stddef.h>
 
-typedef enum {false,true}bool;
+
+//typedef enum {false,true}bool;
 
 struct dataNode
 {
@@ -25,14 +26,14 @@ struct dataType
 	struct dataNode *memList;
 };
 
-struct dataType[] dataCache;
+struct dataType *dataCache;
 
 // malloc and free operations
 void* slabMalloc(uint numBytes);
 void slabFree(void* base);
 
 // accounting operations
-void slabInit(void);
+void slabInit(uint numEl);
 void* slabAlloc(uint numBytes);
 void slabFree(void* base);
 
