@@ -10,10 +10,12 @@
 
 #include <stddef.h>
 
+typedef enum {false,true}bool;
 
 struct dataNode
 {
 	void* mem;
+	bool isfree;
 	struct dataNode *next;
 };
 
