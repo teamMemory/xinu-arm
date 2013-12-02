@@ -22,7 +22,7 @@ struct dataNode
 
 struct dataType
 {
-	int size;
+	uint size;
 	struct dataNode *memList;
 };
 

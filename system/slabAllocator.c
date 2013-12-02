@@ -29,11 +29,11 @@ void slabInit(uint numEl)
 	dataCache[4].memList->mem=malloc(numEl*(sizeof(bool)+1);
 }
 
-void* buddyAlloc(uint numBytes)
+void* slabAlloc(uint numBytes)
 {
 	if( rootNode == NULL )
 	{
-		buddyInit();
+		slabInit();
 	}
 	
 	// for now just returning rootnodes memory region

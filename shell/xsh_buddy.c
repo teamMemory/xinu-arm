@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 #include <buddymemory.h>
+#include <slabmemory.h>
 #include <stdio.h>
 #include <string.h>
 
 shellcmd xsh_buddy(int nargs, char *args[])
 {
 	buddyMalloc(10);
+	slabMalloc(10);
 	printf("Malloced memory!\n");
 	return 0;
 }
