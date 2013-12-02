@@ -13,7 +13,7 @@
 shellcmd xsh_buddy(int nargs, char *args[])
 {
 	buddyMalloc(10);
-	slabMalloc(10);
+	slabMalloc(100, sizeof(int));
 	printf("Malloced memory!\n");
 	return 0;
 }
