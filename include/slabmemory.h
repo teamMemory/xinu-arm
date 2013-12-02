@@ -12,11 +12,12 @@
 
 
 //typedef enum {false,true}bool;
+#define NBDATASTR 5
 
 struct dataNode
 {
 	void* mem;
-	bool isfree;
+	bool isTaken;
 	struct dataNode *next;
 };
 
@@ -26,15 +27,9 @@ struct dataType
 	struct dataNode *memList;
 };
 
-struct dataType *dataCache;
-
-// malloc and free operations
-void* slabMalloc(uint numBytes);
-void slabFree(void* base);
-
 // accounting operations
 void slabInit(uint numEl);
-void* slabAlloc(uint numBytes);
+void* slabAlloc(uint numEl,uint elSize);
 void slabFree(void* base);
 
 #endif  /*_SLABMEMORY_H_*/
