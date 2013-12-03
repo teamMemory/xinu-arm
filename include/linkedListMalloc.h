@@ -11,11 +11,12 @@ struct Node
 {
 	void * mem;
 	struct Node * next;
+	struct Node * prev;
 };
 
 
 void * linkedListMalloc(uint nbytes);
 void * insertNode(uint nbytes);
-void * removeNode(uint idx);
-
+void removeNode(void * loc);
+void * initList(uint nbytes);
 #endif //_LINKEDLISTMALLOC_H_
