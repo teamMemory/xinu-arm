@@ -1,7 +1,7 @@
 /**
  * @file buddymemory.h
  * @author Blake Gross
- * Defintions for buddy memory management system that wraps the kernel's malloc implementation.
+ * Definitions for buddy memory management system that wraps the kernel's malloc implementation.
  *
  */
  
@@ -14,7 +14,7 @@
 
 struct buddynode
 {
-	int isFull;
+        int isUsed;
 	struct buddynode* leftNode;
 	struct buddynode* rightNode;
 	void* memRegion;
@@ -29,5 +29,8 @@ void buddyFree(void* base);
 void buddyInit(void);
 void* buddyAlloc(uint numBytes);
 void buddyFree(void* base);
+
+void buddySplit(struct buddyNode* node);
+struct buddynode* buddyBestFit(uint desiredDepth, struct buddyNode* node);
 
 #endif  /*_BUDDYMEMORY_H_*/
