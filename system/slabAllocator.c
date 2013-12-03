@@ -31,48 +31,75 @@ void slabInit(uint numEl)
 	dataCache[4].memList->mem=malloc(numEl*(sizeof(bool)+1));
 }
 
-void* slabMalloc(uint numEl,uint elSize)
+void* slabMalloc(uint elSize)
 {
 	int i,j;
 	if( dataCache == NULL )
 	{
-		slabInit(numEl);
+		slabInit(NUM_ELEMENTS);	
 	}
 	
-	for( i = 0; i < NBDATASTR; ++i )
+	for( i = 0; i < NBDATASTR; ++i )		// for the amount of elements in the list...
 	{
-		if( dataCache[ i ].size == elSize)
+		if( dataCache[ i ].size == elSize)	// we look for the size that matches the requested allocation
 		{
 			void* tempMemory = NULL;
-			do
+			struct dataNode *current = dataCache[i].memList;
+			do								// We go through the linked list until we find a "page" that is available for use
 			{
-				struct dataNode *current = dataCache[i].memList;
 				if( !current->isTaken )
 				{
 					tempMemory = current->mem;
 					break;
 				}
-			}while( dataCache[i].memList->next != NULL );
+				
+				if( current->next != NULL )
+				{
+					current = current->next;
+				}
+				else
+				{
+					break;
+				}
+			}while( current->next != NULL );
 			
 			if( tempMemory != NULL )
 			{
-				for( j = 0; j < numEl; ++j )
+				for( j = 0; j < NUM_ELEMENTS; ++j )
 				{
 					bool* tempMemoryFull = (tempMemory + j * (elSize + 1) );
 					if( *tempMemoryFull == FALSE )
 					{
 						*tempMemoryFull = TRUE;
+						
+						// RETURN ALLOCATED MEMORY
 						return (void*)(&(*tempMemoryFull));
 					}
 				}
+				
+				current->isTaken = TRUE;	// went through whole "page" without finding anything
+				--i;						// resetting i, so that it will go through the search again
+				continue;
 			}
-			else	// No memory can be found so breaking out
+			else							// No memory can be found so attempting to request more
 			{
-				break;
+				current->next = malloc(sizeof(struct dataNode));
+				if( current->next != NULL )
+				{
+					current->next->mem = malloc((NUM_ELEMENTS*(elSize+1)));
+					if( current->next->mem != NULL )
+					{
+						--i;
+						continue;				// we want to retry the allocation now that we have expanded our memory
+					}
+				}
+				break;	// if the allocation failed, break out (drops to NULL return)
+				
 			}
 		}
 	}
+
 	// for now just returning rootnodes memory region
-	///return rootNode->memRegion;
+	//return rootNode->memRegion;
 	return NULL;
 }

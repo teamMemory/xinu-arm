@@ -13,7 +13,7 @@
 
 //typedef enum {false,true}bool;
 #define NBDATASTR 5
-
+#define NUM_ELEMENTS 100
 struct dataNode
 {
 	void* mem;
@@ -29,7 +29,7 @@ struct dataType
 
 // accounting operations
 void slabInit(uint numEl);
-void* slabAlloc(uint numEl,uint elSize);
+void* slabAlloc(uint elSize);
 void slabFree(void* base);
 
 #endif  /*_SLABMEMORY_H_*/

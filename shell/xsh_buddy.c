@@ -12,8 +12,16 @@
 
 shellcmd xsh_buddy(int nargs, char *args[])
 {
+	int i;
 	buddyMalloc(10);
-	slabMalloc(100, sizeof(int));
+	for( i = 0; i < 100; ++i )
+	{
+		if(!( slabMalloc(sizeof(int)) != NULL && slabMalloc(sizeof(char)) != NULL && slabMalloc(sizeof(short)) != NULL && slabMalloc(sizeof(long)) != NULL && slabMalloc(sizeof(bool)) != NULL ))
+		{
+			printf("Failed to allocate: %d", i);
+			break;
+		}
+	}
 	printf("Malloced memory!\n");
 	return 0;
 }
