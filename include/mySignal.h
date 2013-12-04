@@ -18,7 +18,7 @@
 using namespace std;
 
 /**
-* Handler for all signals
+* Handler for program exit signal
 * signal_id - signal to handle
 */
 void handler_function(int signal_id);

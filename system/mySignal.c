@@ -7,15 +7,20 @@
 using namespace std;
 
 /**
-* Handler for all signals
+* Handler for program exit signal
 * signal_id - signal to handle
 *
 * referenced signal.c given code
 */
 void handler_function(int signal_id){
-	// to do - free all memory
+	// to do - free all allocated memory
 	fprintf(stdout, "\nHandling unknown signal: %d\n", signal_id);
 	fflush(stdout);
+	if (sigaction( SIGKILL, SIG_DFL, NULL ) < 0){ // is this the right signal?
+		fprintf(stderr, "Signal Error: Resetting handler for signal: %i\n", i);
+		fflush(stderr);
+	}
+	raise(SIGKILL);
 }
 
 /**
