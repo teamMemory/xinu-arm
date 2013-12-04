@@ -2,6 +2,7 @@
 *	linkedList Memory Allocator
 *	@file linkedListMalloc.c
 *	@author Joe Cuffney
+*	@author Paul Aman
 */
 
 /////////////////////////////////////////////////////
@@ -39,9 +40,9 @@ void * initList(uint nbytes)
 	root->prev = NULL;
 	root->next = NULL;
 	//set the currect to point to the root
-	current = &root;
+	current = root;
 	//return the location of the memory the program can use
-	return &current;
+	return current;
 }
 
 
@@ -50,6 +51,7 @@ void * initList(uint nbytes)
 */
 void * insertNode(uint nbytes)
 {
+	current = root;
 	while(current->next != NULL)
 	{
 		current = current->next;
@@ -69,46 +71,46 @@ void * insertNode(uint nbytes)
 */
 void removeNode(void * loc)
 {
-	while(current->mem != loc)
+	current = root;
+	while(current->next != NULL)
 	{
-		//avoid dereferencing null pointer
-		if(current->next != NULL)
+		if(current->mem == loc)
+		{
+			break;
+		}
+		else
 		{
 			current = current->next;
 		}
 	}
-	//at the point the current->next is the correct node
+	// loc is not allocated
+	if(current->mem != loc)
+	{
+		return;
+	}
+	//at the point the current is the correct node
 	//store address for prev of the node ahead of the one we are removing
-	void tempPrev = &current;
-	//advance to following node
-	current = current->next;
-	void * tempNext;
-	if(current->next == NULL)
+	void * tempPrev = current->prev;
+	void * tempNext = current->next;
+	tempPrev->next = tempNext;
+	
+	if(current->next != NULL)
 	{
-		//iff end of list
-		tempNext = NULL;
+		tempNext->prev = tempPrev;
 	}
-	else
+	//root to be removed
+	if(root->mem == loc)
 	{
-		current = current->next;
-		tempNext = &current;
-		current->prev = tempPrev;
-		//move back to node before 
-		//the one we are removing
-		current = &current->prev;
-		current = &current->prev;
-		//set the next value
-		current->next = tempNext;
-		//advance to node to remove;
-		current = current->next;
+		root = root->next;
 	}
+	
 	//linked list is intact
 	//deallocate user memory
 	free(loc);
 	//free the associated Node struct
 	free(current);
 	//set current to root
-	current = &root;
+	current = root;
 }
 
 /*
@@ -130,8 +132,8 @@ void * linkedListMalloc(uint nbytes)
 		//insert node and store user memory address
 		void * loc = insertNode(nbytes);
 		//reset the current to the root
-		current = &root;
+		current = root;
 		//return ptr to user memory address
-		return &loc;
+		return loc;
 	}
 }

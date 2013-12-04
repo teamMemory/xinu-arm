@@ -1,6 +1,7 @@
 /*
 *	@file LinkedListMalloc.h
 *	@author Joe Cuffney 
+*	@author Paul Aman
 *	header for linked list memory allocator which uses the kernals malloc
 */
 
