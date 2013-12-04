@@ -10,8 +10,9 @@
 /////////////////////////////////////////////////////
 
 
-#include <linkedListMalloc.h>
+#include "linkedListMalloc.h"
 #include <stdlib.h>
+#include <stdio.h>
 #define TRUE 1
 #define FALSE 0
 
@@ -31,9 +32,9 @@ struct Node * current;	//will point to varying nodes as we traverse
 *	Initializes the root node and sets the "current" Node
 *	to that root
 */
-void * initList(uint nbytes)
+void * initList(unsigned int nbytes)
 {
-	root = malloc(sizeof(struct Node));
+	root = (struct Node *) malloc(sizeof(struct Node));
 	//initialize the root of the tree iff
 	//this is the first chunk allocated
 	root->mem = malloc(nbytes);
@@ -49,20 +50,24 @@ void * initList(uint nbytes)
 /*
 *	Inserts a node at the end of the linked list 
 */
-void * insertNode(uint nbytes)
+void * insertNode(unsigned int nbytes)
 {
+	struct Node * tempPrev;
 	current = root;
 	while(current->next != NULL)
 	{
 		current = current->next;
 	}
-	current->next = malloc(sizeof(struct Node));
+	
+	current->next = (struct Node *) malloc(sizeof(struct Node));
 	//store the address of the node before the new node
-	void * tempPrev = &current;
+	tempPrev = current;
 	//advance 1 node
-	current = currenty->next;
+	current = current->next;
+	current->mem = malloc(nbytes);
 	current->prev = tempPrev;
 	current->next = NULL;
+	return current;
 }
 
 /*
@@ -71,6 +76,8 @@ void * insertNode(uint nbytes)
 */
 void removeNode(void * loc)
 {
+	struct Node * tempPrev;
+	struct Node * tempNext;
 	current = root;
 	while(current->next != NULL)
 	{
@@ -90,8 +97,8 @@ void removeNode(void * loc)
 	}
 	//at the point the current is the correct node
 	//store address for prev of the node ahead of the one we are removing
-	void * tempPrev = current->prev;
-	void * tempNext = current->next;
+	tempPrev = current->prev;
+	tempNext = current->next;
 	tempPrev->next = tempNext;
 	
 	if(current->next != NULL)
@@ -117,8 +124,9 @@ void removeNode(void * loc)
 *	This is a memory manager which wrapps XINU's malloc
 *	function.
 */
-void * linkedListMalloc(uint nbytes)
+void * linkedListMalloc(unsigned int nbytes)
 {	
+	struct Node * n;
 	if(nbytes <= 0)		//Do nothing for 0 or negative memory 
 	{
 		return NULL;
@@ -130,10 +138,21 @@ void * linkedListMalloc(uint nbytes)
 	else			//root has already been initialized
 	{
 		//insert node and store user memory address
-		void * loc = insertNode(nbytes);
+		n = (struct Node *)insertNode(nbytes);
 		//reset the current to the root
 		current = root;
 		//return ptr to user memory address
-		return loc;
+		return n->mem;
 	}
+}
+
+int main()
+{
+	void * loc;
+	printf("Allocating memory");
+	loc = linkedListMalloc(56);
+	printf("Memory allocated");
+	printf("Deallocating memory");
+	removeNode(loc);
+	printf("Memory deallocated");
 }

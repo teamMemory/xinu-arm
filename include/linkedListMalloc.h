@@ -16,8 +16,8 @@ struct Node
 };
 
 
-void * linkedListMalloc(uint nbytes);
-void * insertNode(uint nbytes);
+void * linkedListMalloc(unsigned int nbytes);
+void * insertNode(unsigned int nbytes);
 void removeNode(void * loc);
-void * initList(uint nbytes);
+void * initList(unsigned int nbytes);
 #endif //_LINKEDLISTMALLOC_H_
