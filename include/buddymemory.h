@@ -6,10 +6,15 @@
 #ifndef _BUDDYMEMORY_H_
 #define _BUDDYMEMORY_H_
 
+#include <memory.h>
+#include <stdio.h>
 #include <stddef.h>
 
 #define BUDDY_PAGE_SIZE 1024
-#define MEMORY_DEPTH_REQUEST_ERROR -1
+#define MEMORY_DEPTH_REQUEST_ERROR -1	// Depth request error
+
+#define MAX_DEPTH_OFFSET 2		// Max depth = max possible depth of page size - offset
+
 
 struct buddynode
 {
@@ -29,6 +34,8 @@ void buddyInit(void);
 void* buddyAlloc(uint numBytes);
 void buddyFree(void* base);
 
+void buddyAllocNodePool(uint maxDepth);
+struct buddynode* buddyNodeFromPool();
 void buddySplit(struct buddynode* node);
 struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node);
 
