@@ -1,8 +1,6 @@
 /**
  * @file buddymemory.h
- * @author Blake Gross
  * Definitions for buddy memory management system that wraps the kernel's malloc implementation.
- *
  */
  
 #ifndef _BUDDYMEMORY_H_
@@ -11,6 +9,7 @@
 #include <stddef.h>
 
 #define BUDDY_PAGE_SIZE 1024
+#define MEMORY_DEPTH_REQUEST_ERROR -1
 
 struct buddynode
 {
@@ -30,7 +29,7 @@ void buddyInit(void);
 void* buddyAlloc(uint numBytes);
 void buddyFree(void* base);
 
-void buddySplit(struct buddyNode* node);
-struct buddynode* buddyBestFit(uint desiredDepth, struct buddyNode* node);
+void buddySplit(struct buddynode* node);
+struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node);
 
 #endif  /*_BUDDYMEMORY_H_*/
