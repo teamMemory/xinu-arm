@@ -9,15 +9,15 @@
 //#include <slabmemory.h>
 #include <stdio.h>
 #include <string.h>
-#include <memstat.h>
+//#include <memstat.h>
 
 shellcmd xsh_buddy(int nargs, char *args[])
 {
 	int i;
 	buddyMalloc(1024);
-	for( i = 0; i < 100; ++i )
+	for( i = 0; i < 25; ++i )
 	{
-		buddyMalloc(i * 3);
+		buddyMalloc(5);
 	}
 	//for( i = 0; i < 100; ++i )
 	//{
@@ -28,7 +28,13 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	//	}
 	//}
 	printf("Malloced memory!\n");
-	//printMemUsage();
 	
+	printMemUsage();
+	
+	buddyDealloc();
+	
+	printf("Dealloced memory\n");
+	
+	printMemUsage();
 	return 0;
 }
