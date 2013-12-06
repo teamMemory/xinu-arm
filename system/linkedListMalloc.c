@@ -13,16 +13,25 @@
 #include "linkedListMalloc.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #define TRUE 1
 #define FALSE 0
+#define POOL_SIZE 1024
 
 /////////////////////////////////////////////////////
 /// Globals
 /////////////////////////////////////////////////////
 
 
-struct Node * root;	//will always point to the root node
-struct Node * current;	//will point to varying nodes as we traverse
+//struct Node * root;	//will always point to the root node
+//struct Node * current;//will point to varying nodes as we traverse
+
+void * root;		//will always point to the root node
+void * current;		//will point to varying nodes as we traverse
+void * nextChunk;	//points to the next chunk of unallocated memory
+void * lastChunk;	//the previous chunk allocated.
+
+int init = FALSE;	//states whether the allocator has been initialized.
 
 /////////////////////////////////////////////////////
 /// Functions
@@ -31,28 +40,55 @@ struct Node * current;	//will point to varying nodes as we traverse
 /*
 *	Initializes the root node and sets the "current" Node
 *	to that root
+*
+*	The strucure will be as follows:
+*	|STUCT NODE|USER MEMORY|STRUCT NODE|USER MEMORY|...|
+*
 */
-void * initList(unsigned int nbytes)
+void * initList(unsigned int userBytes)
 {
-	root = (struct Node *) malloc(sizeof(struct Node));
-	//initialize the root of the tree iff
-	//this is the first chunk allocated
-	root->mem = malloc(nbytes);
-	root->prev = NULL;
-	root->next = NULL;
-	//set the currect to point to the root
-	current = root;
-	//return the location of the memory the program can use
-	return current;
+	//allocate a pool of memory
+	root = malloc(POOL_SIZE);
+	printf("	Root Address: %p\n" , root);
+	int nodeSize = sizeof(struct Node);
+	printf("	Node Size: %i\n" , nodeSize);
+	printf("	USER MEM SIZE: %i\n" , userBytes);
+	int totalSize = nodeSize + userBytes;
+	struct Node firstNode;
+		//root = (struct Node *) malloc(sizeof(struct Node));
+		//root->mem = malloc(nbytes);
+		//root->prev = NULL;
+		//root->next = NULL;
+	firstNode.mem = &root + nodeSize;
+	printf("	USER MEM ADDRESS: %p\n" , firstNode.mem);
+
+	firstNode.prev = NULL;
+	firstNode.next = NULL;
+	firstNode.len = totalSize;
+	firstNode.taken = TRUE;
+
+	//copy the firstNode into the memory pool
+	memcpy(&root,&firstNode,nodeSize);
+	
+	current = &root;
+	//set next chunk to the address after the initial chunk
+	nextChunk = &root + totalSize;
+
+	//set the lastChunk *
+	lastChunk = &root;
+
+	//return the root location plus the offset of the struct
+	//to get the user's memory location
+	return &root + nodeSize;
 }
 
 
 /*
 *	Inserts a node at the end of the linked list 
 */
-void * insertNode(unsigned int nbytes)
+void * insertNode(unsigned int userBytes)
 {
-	struct Node * tempPrev;
+	/*struct Node * tempPrev;
 	current = root;
 	while(current->next != NULL)
 	{
@@ -67,7 +103,18 @@ void * insertNode(unsigned int nbytes)
 	current->mem = malloc(nbytes);
 	current->prev = tempPrev;
 	current->next = NULL;
-	return current;
+	return current;*/
+
+	struct Node newNode;
+	int nodeSize = sizeof(struct Node);
+	int totalSize = nodeSize + userBytes;
+	//now we need to see if their is an open
+	//chunk left by a previous node (taken = 0)
+	current = &root;
+	//taken should be the first 4 byte chunk stored
+		
+	newNode.mem = &nextChunk + nodeSize;
+	
 }
 
 /*
@@ -76,6 +123,7 @@ void * insertNode(unsigned int nbytes)
 */
 void removeNode(void * loc)
 {
+	/*
 	struct Node * tempPrev;
 	struct Node * tempNext;
 	current = root;
@@ -118,6 +166,7 @@ void removeNode(void * loc)
 	free(current);
 	//set current to root
 	current = root;
+	*/
 }
 
 /*
@@ -131,8 +180,9 @@ void * linkedListMalloc(unsigned int nbytes)
 	{
 		return NULL;
 	}
-	else if(root == NULL)	//initialize root
+	else if(!init)	//initialize root
 	{
+		init = TRUE;
 		return initList(nbytes);
 	}
 	else			//root has already been initialized
@@ -149,10 +199,10 @@ void * linkedListMalloc(unsigned int nbytes)
 int main()
 {
 	void * loc;
-	printf("Allocating memory");
+	printf("Allocating memory\n");
 	loc = linkedListMalloc(56);
-	printf("Memory allocated");
-	printf("Deallocating memory");
+	printf("Memory allocated\n");
+	printf("Deallocating memory\n");
 	removeNode(loc);
-	printf("Memory deallocated");
+	printf("Memory deallocated\n");
 }

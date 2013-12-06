@@ -10,6 +10,8 @@
 
 struct Node
 {
+	int taken;
+	int len;
 	void * mem;
 	struct Node * next;
 	struct Node * prev;
