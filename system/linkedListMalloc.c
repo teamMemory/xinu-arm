@@ -26,10 +26,11 @@
 //struct Node * root;	//will always point to the root node
 //struct Node * current;//will point to varying nodes as we traverse
 
-void * root;		//will always point to the root node
-void * current;		//will point to varying nodes as we traverse
-void * nextChunk;	//points to the next chunk of unallocated memory
-void * lastChunk;	//the previous chunk allocated.
+void * pool;			//points to pool of memory to allocate from
+struct Node root;		//will always point to the root node
+//void * current;		//will point to varying nodes as we traverse
+//void * nextChunk;	//points to the next chunk of unallocated memory
+//void * lastChunk;	//the previous chunk allocated.
 
 int init = FALSE;	//states whether the allocator has been initialized.
 
@@ -45,16 +46,20 @@ int init = FALSE;	//states whether the allocator has been initialized.
 *	|STUCT NODE|USER MEMORY|STRUCT NODE|USER MEMORY|...|
 *
 */
+/*
 void * initList(unsigned int userBytes)
 {
+	
+	int nodeSize, totalSize;
+	struct Node firstNode;
 	//allocate a pool of memory
 	root = malloc(POOL_SIZE);
 	printf("	Root Address: %p\n" , root);
-	int nodeSize = sizeof(struct Node);
+	nodeSize = sizeof(struct Node);
 	printf("	Node Size: %i\n" , nodeSize);
 	printf("	USER MEM SIZE: %i\n" , userBytes);
-	int totalSize = nodeSize + userBytes;
-	struct Node firstNode;
+	totalSize = nodeSize + userBytes;
+	
 		//root = (struct Node *) malloc(sizeof(struct Node));
 		//root->mem = malloc(nbytes);
 		//root->prev = NULL;
@@ -80,6 +85,10 @@ void * initList(unsigned int userBytes)
 	//return the root location plus the offset of the struct
 	//to get the user's memory location
 	return &root + nodeSize;
+}*/
+void * initList(unsigned int userBytes)
+{
+
 }
 
 
