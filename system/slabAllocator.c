@@ -72,4 +72,6 @@ struct SlabCacheList *createCache(uint size)
 	{
 		slabInit();
 	}
+	
+	return 	newCache = (struct SlabCacheList*)(&memBlock->prev + sizeof(struct SlabCacheList);	// creates new cache from memory
 }
