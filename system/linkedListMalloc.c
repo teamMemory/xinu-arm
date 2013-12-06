@@ -74,8 +74,49 @@ void * initList(unsigned int userBytes)
 */
 void * insertNode(unsigned int userBytes)
 {
-	
+	void * cur = &root;
+	int sizeStruct = sizeof(struct Node);
+	int poolBytesUsed = 0;
+	while(cur.next! != NULL)
+	{
+		//cast cur to (struct *)?
+		
+		if(!cur.taken && cur.len >= userBytes)
+		{
+			return cur.mem;
+		}
+		else
+		{
+			poolBytesUsed += (sizeStruct + cur.len);
+			cur = cur.next;	
+		}
+	}
+	//cur points to the last existing node
+	int sizeNeeded = userBytes + sizeStruct;
+	//only allocate a new Node if we have the space to do so
+	if((sizeNeeded + poolBytesUsed) < POOL_SIZE)
+	{
+		struct Node newNode;
+		newNode.next = NULL;
+		newNode.taken = TRUE;
+		newNode.len = userBytes;
+		newNode.mem = newNode += cur + sizeof(struct Node);
+		//now we need to copy the newNode into the pool
+		//first advance to the next chunk in the pool
+		cur += structSize + cur.len;
+		memcpy(&cur, &newNode, sizeof(struct Node);
+		//the memory is now in the pool.	
+		return &cur;
+	}
+	else
+	{
+		//in this case we can't allocate the memory because
+		//we don't have sufficient space in the pool.
+		return NULL;
+	}
+
 }
+
 
 /*
 *	This Function takes in a pointer to a location in memory
