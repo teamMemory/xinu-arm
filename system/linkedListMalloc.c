@@ -124,7 +124,19 @@ void * insertNode(unsigned int userBytes)
 */
 void removeNode(void * loc)
 {
-
+	struct Node * curr = (struct Node *)root;
+	while (curr->next != NULL && curr->mem != loc)
+	{
+		curr = curr->next;
+	}
+	if (curr->mem == loc && curr->taken == TRUE)
+	{
+		curr->taken = FALSE;
+	}
+	else 
+	{
+		printf("Loc hasn't been allocated.");
+	}
 }
 
 /*
