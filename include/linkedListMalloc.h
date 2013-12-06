@@ -14,7 +14,6 @@ struct Node
 	int len;
 	void * mem;
 	struct Node * next;
-	struct Node * prev;
 };
 
 
