@@ -14,6 +14,8 @@ int pageSize = 0;
 struct buddynode* nodePool;
 uint nodePoolCount = 0;
 
+struct buddynode** nodeTraversalList;	// This is used to keep track of nodes in a traversal
+
 /**
 * BuddyInit - Initalize the Page allocation and Pool of Nodes
 * @param  buddyPageSize - the size of the page requested to allocate
@@ -44,6 +46,9 @@ void buddyInit(uint buddyPageSize)
 		rootNode = buddyNodeFromPool();
 		rootNode->memRegion = malloc( buddyPageSize );
 		pageSize = buddyPageSize;
+
+		// Allocate node traversal list
+		nodeTraversalList = ( struct buddynode** )malloc( sizeof( struct buddynode* ) * maxDepth + 1 );
 	}
 	else
 	{
@@ -284,6 +289,7 @@ struct buddynode* buddyNodeFromPool()
 			// Node Free
 			if( !nodePool[i].memRegion )
 			{
+				printf("%d", i);
 				return ( nodePool + i );
 			}
 		}
@@ -313,6 +319,7 @@ void buddyFree(void* base)
 	int nodesMemRegion;
 
 	int memorySegementSize = 0;
+	bool previousMemoryCleared = FALSE;
 
 	// Check if the address is in Bounds of the Page
 	if( (int)rootNode->memRegion <= baseAddress && (int)rootNode->memRegion + pageSize >= baseAddress )
@@ -321,6 +328,8 @@ void buddyFree(void* base)
 		while( memoryNode )
 		{
 			nodesMemRegion = (int)memoryNode->memRegion;
+
+			nodeTraversalList[memoryNode->depth] = memoryNode;
 
 			// Memory address almost found
 			if( nodesMemRegion == baseAddress )
@@ -343,28 +352,46 @@ void buddyFree(void* base)
 				// Child Node Found
 				else
 				{
-					// Determine Side - Left is equal to
+					int maxDepthReached = memoryNode->depth;
 
-					// Clear memory allocated
-					uint sizeOfMemoryChunk = pageSize >> memoryNode->depth;		// Get size of memory Chunk to clear out
-					memset( memoryNode->memRegion, 0, sizeOfMemoryChunk );
-					memoryNode->isUsed = FALSE;
-
-					// Check if Node can be UnSplit ( child nodes are unused )
-					struct buddynode* parentLeftNode = parentNode->leftNode;
-					struct buddynode* parentRightNode = parentNode->rightNode;
-
-					if( !(parentLeftNode->isUsed) && !(parentLeftNode->leftNode) && !(parentLeftNode->rightNode) && 
-						!(parentRightNode->isUsed) && !(parentRightNode->leftNode) && !(parentRightNode->rightNode) )
+					for( int i = maxDepthReached; i >= 1; --i )
 					{
-						// Clear memory Nodes
-						memset( parentNode->leftNode, 0, sizeof(struct buddynode) );
-						memset( parentNode->rightNode, 0, sizeof(struct buddynode) );
 
-						parentNode->leftNode = NULL;
-						parentNode->rightNode = NULL;
+						parentNode = nodeTraversalList[i - 1];
+						memoryNode = nodeTraversalList[i];
+
+						// Determine Side - Left is equal to
+						if( ( memoryNode->memRegion || previousMemoryCleared ) && parentNode->memRegion )
+						{
+							// Clear memory allocated
+							uint sizeOfMemoryChunk = pageSize >> memoryNode->depth;		// Get size of memory Chunk to clear out
+							memset( memoryNode->memRegion, 0, sizeOfMemoryChunk );
+							memoryNode->isUsed = FALSE;
+
+							// Check if Node can be UnSplit ( child nodes are unused )
+							struct buddynode* parentLeftNode = parentNode->leftNode;
+							struct buddynode* parentRightNode = parentNode->rightNode;
+
+							if( !(parentLeftNode->isUsed) && !(parentLeftNode->leftNode) && !(parentLeftNode->rightNode) && 
+								!(parentRightNode->isUsed) && !(parentRightNode->leftNode) && !(parentRightNode->rightNode) )
+							{
+								// Clear memory Nodes
+								memset( parentNode->leftNode, 0, sizeof(struct buddynode) );
+								memset( parentNode->rightNode, 0, sizeof(struct buddynode) );
+								previousMemoryCleared = TRUE;
+
+								parentNode->leftNode = NULL;
+								parentNode->rightNode = NULL;
+							}
+
+							// Memory cannot be merged any more
+							else
+							{
+								break;
+							}
+						}
 					}
-					memoryNode = NULL;		// Break loop
+						memoryNode = NULL;		// Break loop
 				}
 			}
 
@@ -400,4 +427,14 @@ void buddyFree(void* base)
 	{
 		printf("Address is outside bounds of the page");
 	}
+}
+
+/**
+* BuddyDealloc - Removes all of the memory allocated
+*/
+void buddyDealloc()
+{
+	free(rootNode->memRegion);
+	free(nodePool);
+	free(nodeTraversalList);
 }
