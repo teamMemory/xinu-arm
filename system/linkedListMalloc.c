@@ -44,12 +44,19 @@ int init = FALSE;	//states whether the allocator has been initialized.
 */
 void * initList(unsigned int userBytes)
 {
+	
 	int nodeSize, totalSize;
 	struct Node * firstNode;
 	//allocate a pool of memory
 	root = malloc(POOL_SIZE);
-	printf("	Root Address: %p\n" , root);
+	
 	nodeSize = sizeof(struct Node);
+	if (userBytes + nodeSize > POOL_SIZE)
+	{
+		printf("Block too large to allocate.");
+		return NULL;
+	}
+	printf("	Root Address: %p\n" , root);
 	printf("	Node Size: %i\n" , nodeSize);
 	printf("	USER MEM SIZE: %i\n" , userBytes);
 	totalSize = nodeSize + userBytes;
@@ -74,44 +81,45 @@ void * initList(unsigned int userBytes)
 */
 void * insertNode(unsigned int userBytes)
 {
-	void * cur = &root;
-	int sizeStruct = sizeof(struct Node);
-	int poolBytesUsed = 0;
-	while(cur.next! != NULL)
+	int sizeStruct, poolBytesUsed, sizeNeeded;
+	struct Node * newNode, * cur;
+	cur = (struct Node *)root;
+	sizeStruct = sizeof(struct Node);
+	poolBytesUsed = 0;
+	while(cur->next != NULL)
 	{
 		//cast cur to (struct *)?
 		
-		if(!cur.taken && cur.len >= userBytes)
+		if(!cur->taken && cur->len >= userBytes)
 		{
-			return cur.mem;
+			cur->taken = TRUE;
+			return cur->mem;
 		}
 		else
 		{
-			poolBytesUsed += (sizeStruct + cur.len);
-			cur = cur.next;	
+			poolBytesUsed += (sizeStruct + cur->len);
+			cur = cur->next;
 		}
 	}
 	//cur points to the last existing node
-	int sizeNeeded = userBytes + sizeStruct;
+	sizeNeeded = userBytes + sizeStruct;
 	//only allocate a new Node if we have the space to do so
 	if((sizeNeeded + poolBytesUsed) < POOL_SIZE)
 	{
-		struct Node newNode;
-		newNode.next = NULL;
-		newNode.taken = TRUE;
-		newNode.len = userBytes;
-		newNode.mem = newNode += cur + sizeof(struct Node);
-		//now we need to copy the newNode into the pool
-		//first advance to the next chunk in the pool
-		cur += structSize + cur.len;
-		memcpy(&cur, &newNode, sizeof(struct Node);
-		//the memory is now in the pool.	
-		return &cur;
+		cur->next = cur + sizeNeeded;
+		newNode = cur->next;
+		newNode->next = NULL;
+		newNode->taken = TRUE;
+		newNode->len = userBytes;
+		newNode->mem = cur + sizeof(struct Node);
+		
+		return newNode->mem;
 	}
 	else
 	{
 		//in this case we can't allocate the memory because
 		//we don't have sufficient space in the pool.
+		printf("Block too large to allocate.");
 		return NULL;
 	}
 
@@ -165,6 +173,11 @@ void * linkedListMalloc(unsigned int nbytes)
 	}
 }
 
+void freeMemory()
+{
+	free(root);
+}
+
 int main()
 {
 	void * loc;
@@ -174,4 +187,7 @@ int main()
 	printf("Deallocating memory\n");
 	removeNode(loc);
 	printf("Memory deallocated\n");
+	printf("Freeing memory\n");
+	freeMemory();
+	printf("Memory Freed\n");
 }
