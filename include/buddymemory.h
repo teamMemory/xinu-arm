@@ -18,7 +18,7 @@
 
 struct buddynode
 {
-        int isUsed;
+    int isUsed;
 	struct buddynode* leftNode;
 	struct buddynode* rightNode;
 	void* memRegion;
@@ -30,7 +30,7 @@ void* buddyMalloc(uint numBytes);
 void buddyFree(void* base);
 
 // accounting operations
-void buddyInit(void);
+void buddyInit(uint buddyPageSize);
 void* buddyAlloc(uint numBytes);
 void buddyFree(void* base);
 

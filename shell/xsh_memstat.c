@@ -6,28 +6,7 @@
  */
 /* Embedded Xinu, Copyright (C) 2009.  All rights reserved. */
 
-#include <stddef.h>
-#include <platform.h>
-#include <mips.h>
-#include <memory.h>
-#include <safemem.h>
-#include <stdio.h>
-#include <string.h>
-#include <thread.h>
-#include <stdlib.h>
-
-#define PRINT_DEFAULT 0x01
-#define PRINT_KERNEL  0x02
-#define PRINT_REGION  0x04
-#define PRINT_THREAD  0x08
-
-extern char *maxaddr;
-extern void _start(void);
-
-static void printMemUsage(void);
-static void printRegAllocList(void);
-static void printRegFreeList(void);
-static void printFreeList(struct memblock *, char *);
+#include <memstat.h>
 
 static void usage(char *command)
 {
@@ -127,7 +106,7 @@ shellcmd xsh_memstat(int nargs, char *args[])
 }
 
 
-static void printMemUsage(void)
+void printMemUsage(void)
 {
     int i;
     uint phys = 0;              /* total physical memory          */
@@ -211,7 +190,7 @@ static void printMemUsage(void)
 /**
  * Dump the current contents of the allocated region list.
  */
-static void printRegAllocList(void)
+void printRegAllocList(void)
 {
 #ifdef UHEAP_SIZE
     uint index;
@@ -238,7 +217,7 @@ static void printRegAllocList(void)
 /**
  * Dump the current contents of the free region list.
  */
-static void printRegFreeList(void)
+void printRegFreeList(void)
 {
 #ifdef UHEAP_SIZE
     uint index;
@@ -264,7 +243,7 @@ static void printRegFreeList(void)
  * Dump the current free list of a specific thread.
  * @param tid Id of thread to dump free list.
  */
-static void printFreeList(struct memblock *base, char *ident)
+void printFreeList(struct memblock *base, char *ident)
 {
     struct memblock *block;
 

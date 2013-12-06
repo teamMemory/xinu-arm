@@ -282,9 +282,10 @@ struct buddynode* buddyNodeFromPool()
 {
 	if( nodePool )
 	{
+		int i = 0;
 		// Go through pool until Node memRegion is 0 ( Node is Free )
 		// Then return that Nodes address
-		for( int i = 0; i < nodePoolCount; ++i )
+		for( i; i < nodePoolCount; ++i )
 		{
 			// Node Free
 			if( !nodePool[i].memRegion )
@@ -353,8 +354,8 @@ void buddyFree(void* base)
 				else
 				{
 					int maxDepthReached = memoryNode->depth;
-
-					for( int i = maxDepthReached; i >= 1; --i )
+					int i = maxDepthReached;
+					for( i; i >= 1; --i )
 					{
 
 						parentNode = nodeTraversalList[i - 1];
