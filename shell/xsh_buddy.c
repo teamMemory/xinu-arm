@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <buddymemory.h>
-#include <slabmemory.h>
+//#include <slabmemory.h>
 #include <stdio.h>
 #include <string.h>
 #include <memstat.h>
