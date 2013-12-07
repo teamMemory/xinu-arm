@@ -27,7 +27,6 @@ struct MemRange
 	struct Slab *pSlab;
 };
 
-struct MemRange *freeMem,*usedMem;
 // Cache Structure containing the list of slabs
 struct SlabCacheList
 {

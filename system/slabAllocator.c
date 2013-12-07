@@ -11,6 +11,9 @@
 
 struct SlabCacheList *cacheHead;
 void* memBlock;
+
+struct MemRange *freeMem,*usedMem;
+
 void slabInit()
 {
 	//alocating the memory pull
@@ -177,7 +180,7 @@ void* slabMalloc(uint elSize)
 	void* memoryToReturn = NULL;
 	while( currentSlab != NULL )
 	{
-		if( currentSlab-> NbFree > 0 )	// if the slab has free space, we can allocate in it
+		if( currentSlab->nbFree > 0 )	// if the slab has free space, we can allocate in it
 		{
 			struct BufferList* headBuffer = currentSlab->pFree;
 			memoryToReturn = headBuffer->pObject;		// first object on list is always going to be free, now we have to take if off the list (works like a queue)
@@ -190,7 +193,7 @@ void* slabMalloc(uint elSize)
 			}
 			currentSlab->pFree = headBuffer->pNext;
 			
-			--NbFree;
+			currentSlab->nbFree--;
 			break;
 		}
 		
