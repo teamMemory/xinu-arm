@@ -82,6 +82,7 @@ bool buddyInit(uint buddyPageSize)
 	{
 		if( showDebugMSGS ){ printf("Buddy Page doesn't split evenly enough\n"); }
 		maxDepth = 0;
+		errorFree = FALSE;
 	}
 
 	// Error occurred during allocation clean up memory
