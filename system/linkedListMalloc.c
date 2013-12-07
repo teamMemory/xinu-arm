@@ -11,6 +11,7 @@
 
 
 #include "linkedListMalloc.h"
+#include "fragStruct.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -67,7 +68,8 @@ void * initList(unsigned int userBytes)
 	printf("	USER MEM ADDRESS: %p\n" , firstNode->mem);
 
 	firstNode->next = NULL;
-	firstNode->len = userBytes;
+	firstNode->lenUsed = userBytes;
+	firstNode->lenAvail = userBytes;
 	firstNode->taken = TRUE;
 
 	//return the root location plus the offset of the struct
@@ -90,14 +92,15 @@ void * insertNode(unsigned int userBytes)
 	{
 		//cast cur to (struct *)?
 		
-		if(!cur->taken && cur->len >= userBytes)
+		if(!cur->taken && cur->lenAvail >= userBytes)
 		{
+			cur->lenUsed = userBytes;
 			cur->taken = TRUE;
 			return cur->mem;
 		}
 		else
 		{
-			poolBytesUsed += (sizeStruct + cur->len);
+			poolBytesUsed += (sizeStruct + cur->lenAvail);
 			cur = cur->next;
 		}
 	}
@@ -110,7 +113,8 @@ void * insertNode(unsigned int userBytes)
 		newNode = cur->next;
 		newNode->next = NULL;
 		newNode->taken = TRUE;
-		newNode->len = userBytes;
+		newNode->lenUsed = userBytes;
+		newNode->lenAvail = userBytes;
 		newNode->mem = cur + sizeof(struct Node);
 		
 		return newNode->mem;
@@ -177,6 +181,8 @@ void freeMemory()
 {
 	free(root);
 }
+
+
 
 int main()
 {
