@@ -9,6 +9,13 @@
 #define _LINKEDLISTMALLOC_H_
 
 #include "memFrag.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#define TRUE 1
+#define FALSE 0 
+#define POOL_SIZE 10240
 
 struct Node
 {

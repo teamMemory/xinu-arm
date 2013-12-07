@@ -158,7 +158,7 @@ bool buddySplit(struct buddynode* node)
 		// Get From Node Pool ----------------------------------------------
 
         struct buddynode* leftNode = buddyNodeFromPool();			// Node to manage children attributes
-	struct buddynode* rightNode = buddyNodeFromPool( );		// Node to manage children attributes
+	struct buddynode* rightNode = buddyNodeFromPool( );	//previously 1	// Node to manage children attributes
 
         int childDepth = node->depth + 1;
 
