@@ -63,7 +63,7 @@ bool buddyInit(uint buddyPageSize)
 				if( errorFree )
 				{
 					// Allocate node traversal list
-					nodeTraversalList = ( struct buddynode** )malloc( sizeof( struct buddynode* ) * maxDepth + 1 );
+					nodeTraversalList = ( struct buddynode** )malloc( sizeof( struct buddynode* ) * (maxDepth + 1) );
 					errorFree = errorFree && nodeTraversalList;
 				}
 			}
@@ -127,11 +127,11 @@ void* buddyAlloc(uint numBytes)
         // Make sure desiredDepth doesn't pass maxDepth
         if( desiredDepth > maxDepth )
         {   
-			if( showDebugMSGS ){ printf("Memory request is to small.\n"); }
+			desiredDepth = maxDepth;
 		}
 
 		// Negative desiredDepth means - Amount to allocate is larger than BUDDY_PAGE_SIZE   
-		else if( desiredDepth == MEMORY_DEPTH_REQUEST_ERROR )
+		if( desiredDepth == MEMORY_DEPTH_REQUEST_ERROR )
 		{
 			if( showDebugMSGS ){ printf("Memory request is larger than page size.\n"); }
 		}
@@ -549,7 +549,7 @@ void buddyDealloc(void)
 
 	if( nodeTraversalList )
 	{
-		memset( nodeTraversalList, 0, sizeof( struct buddynode* ) * maxDepth + 1 );
+		memset( nodeTraversalList, 0, sizeof( struct buddynode* ) * (maxDepth + 1) );
 		free( nodeTraversalList );
 	}
 
