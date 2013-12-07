@@ -52,12 +52,13 @@ void slabInit()
 
 struct Slab * createNewSlab(struct SlabCacheList *cache)
 {
-	uint size = NULL;
+	uint size = 0;
 	struct Slab *slabEl = NULL,*lastSlab = NULL;
 	struct MemRange *current = NULL,*usedrange = NULL;
 	current=freeMem;
 	size=sizeof(struct Slab)+BUFFER;
-	while( current->pNext != NULL )
+	//Going through the list of free memory chunks
+	while( current != NULL )
 	{
 		if( current->nbBytes>= size)
 		{
@@ -65,17 +66,17 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 		}
 		current = current->pNext;
 	}
-	if( current->nbBytes< size) 
+	if( current==NULL) 
 		{
-			printf("There is not enough memory to create the slab!!!\n");
+			printf("There is not enough memory to create the cache!!!\n");
 	}else{
 		//Get the last slab in the cache
 		lastSlab=cache->pSlabList;
 		while( lastSlab->pNext != NULL )lastSlab=lastSlab->pNext;
 
 		//Allocate slab header in the found freeMem
-		slabEl=(struct Slab *)current->base;
-		slabEl->firstObj=(char *)current->base+sizeof(struct Slab);
+		slabEl=(struct Slab *)current->base+sizeof(struct MemRange);
+		slabEl->firstObj=(void * )((char *)slabEl+sizeof(struct Slab));
 		slabEl->nbFree=cache->slabObjCnt;
 		slabEl->nbTotal=cache->slabObjCnt;
 		slabEl->pCache=cache;
@@ -90,33 +91,36 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 		slabEl->pPrev=lastSlab;
 		cache->freeObj+=cache->slabObjCnt;
 
-		usedrange=usedMem;
+				usedrange=usedMem;
 		while( usedrange->pNext != NULL )usedrange=usedrange->pNext;
 		
 		
 		if(current->nbBytes-size>sizeof(struct MemRange))
 		{
-			struct MemRange *freeNode = NULL;
-			freeNode=(struct MemRange *)((char *)current->base+size);
-			freeNode->base=(char *)current->base+size;
-			freeNode->nbBytes=current->nbBytes-size;
+			struct MemRange *freeNode=NULL;
+			freeNode=(struct MemRange *)((char *)current->base+size+sizeof(struct MemRange));
+			freeNode->base=(void *)freeNode;
+			freeNode->nbBytes=current->nbBytes-size-sizeof(struct MemRange);
 			freeNode->pSlab=NULL;
 			freeNode->pNext=NULL;
 			freeNode->pPrev=current->pPrev;
 
 			if (current->pPrev!=NULL)current->pPrev->pNext=freeNode;
-			
+			else freeMem=freeNode;
 
 			current->pPrev=usedrange;
 			usedrange->pNext=current;
 			current->pNext=NULL;
 			current->nbBytes=size;
 			current->pSlab=slabEl;
-		}
-
+		}else{
 		//Unmap the used memory from the free list
-		usedrange->pNext=current;		
-
+		current->pPrev=usedrange;
+		usedrange->pNext=current;
+		current->pNext=NULL;
+		current->nbBytes=size+sizeof(struct MemRange);
+		current->pSlab=slabEl;
+		}
 	}
 	return slabEl;
 }
@@ -166,12 +170,11 @@ struct SlabCacheList *createCache(uint objSize)
 		slabEl->pNext=NULL;
 		slabEl->pCache=cacheEl;
 		slabEl->pRange=current;
-		
+		slabEl->nbTotal=cacheEl->slabObjCnt;
 
 		slabEl->firstObj=(void *)((char *)slabEl+sizeof(struct Slab));
 		slabEl->pFree=createBuffer(slabEl->firstObj,cacheEl->allocSize);
 		slabEl->nbFree=cacheEl->slabObjCnt;
-		slabEl->nbTotal=cacheEl->slabObjCnt;
 
 		usedrange=usedMem;
 		while( usedrange->pNext != NULL )usedrange=usedrange->pNext;
@@ -181,8 +184,8 @@ struct SlabCacheList *createCache(uint objSize)
 		{
 			struct MemRange *freeNode;
 			freeNode=(struct MemRange *)((char *)current->base+size);
-			freeNode->base=(void *)((char *)current->base+size);
-			freeNode->nbBytes=current->nbBytes-size;
+			freeNode->base=(void *)((char *)current->base+size+sizeof(struct MemRange));
+			freeNode->nbBytes=current->nbBytes-size-sizeof(struct MemRange);
 			freeNode->pSlab=NULL;
 			freeNode->pNext=NULL;
 			freeNode->pPrev=current->pPrev;
@@ -200,7 +203,7 @@ struct SlabCacheList *createCache(uint objSize)
 		current->pPrev=usedrange;
 		usedrange->pNext=current;
 		current->pNext=NULL;
-		current->nbBytes=size;
+		current->nbBytes=size+sizeof(struct MemRange);
 		current->pSlab=slabEl;
 		}
 
