@@ -82,4 +82,6 @@ uint slabFree(void* base);
 uint alignMemory(uint objSize);
 struct BufferList* createBuffer(void *base,uint objSize);
 struct Slab * createNewSlab(struct  SlabCacheList *cache);
+uint slabDestroy(struct Slab* slab);
+void slabCleanup();
 #endif  /*_SLABMEMORY_H_*/

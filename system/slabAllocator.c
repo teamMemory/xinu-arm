@@ -46,14 +46,15 @@ void slabInit()
 	cacheHead->freeObj=-1;
 	cacheHead->slabObjCnt=-1;
 	cacheHead->objSize=-1;
+	cacheHead->pSlabList = NULL;
 }
 
 
 struct Slab * createNewSlab(struct SlabCacheList *cache)
 {
-	uint size;
-	struct Slab *slabEl,*lastSlab;
-	struct MemRange *current,*usedrange;
+	uint size = NULL;
+	struct Slab *slabEl = NULL,*lastSlab = NULL;
+	struct MemRange *current = NULL,*usedrange = NULL;
 	current=freeMem;
 	size=sizeof(struct Slab)+BUFFER;
 	while( current->pNext != NULL )
@@ -94,7 +95,7 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 		
 		if(current->nbBytes-size>sizeof(struct MemRange))
 		{
-			struct MemRange *freeNode;
+			struct MemRange *freeNode = NULL;
 			freeNode=(struct MemRange *)((char *)current->base+size);
 			freeNode->base=(char *)current->base+size;
 			freeNode->nbBytes=current->nbBytes-size;
@@ -120,11 +121,11 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 }
 struct SlabCacheList *createCache(uint objSize)
 {
-	struct SlabCacheList *lastCache;
-	struct SlabCacheList *cacheEl;
-	struct Slab *slabEl;
-	struct MemRange *current,*usedrange;
-	uint size;
+	struct SlabCacheList *lastCache = NULL;
+	struct SlabCacheList *cacheEl = NULL;
+	struct Slab *slabEl = NULL;
+	struct MemRange *current = NULL,*usedrange = NULL;
+	uint size = 0;
 	size=sizeof(struct SlabCacheList)+sizeof(struct Slab)+BUFFER;
 	current=freeMem;
 	
@@ -201,16 +202,79 @@ struct SlabCacheList *createCache(uint objSize)
 	}
 	return cacheEl;
 }
+
+uint cacheDestroy(struct SlabCacheList *pCache)
+{
+	struct Slab* startSlab = pCache->pSlabList;
+	struct Slab* currentSlab = pCache->pSlabList;
+	struct Slab* nextSlab = NULL;
+	if( currentSlab != NULL )
+	{
+		do
+		{
+			nextSlab = currentSlab->pNext;
+			slabDestroy( currentSlab );
+
+			if( currentSlab->pPrev )
+			{
+				currentSlab->pPrev->pNext = currentSlab->pNext;
+			}
+			if( currentSlab->pNext )
+			{
+				currentSlab->pNext->pPrev = currentSlab->pPrev;
+			}
+			
+			currentSlab->pPrev = 0;
+			currentSlab->pNext = 0;
+
+			currentSlab = nextSlab;
+		}while( currentSlab != NULL && currentSlab != startSlab);
+	}
+
+	return 1;
+}
+
+uint slabDestroy(struct Slab* slab)
+{
+	struct Slab* startSlab = slab;
+	struct Slab* currentSlab = slab;
+	
+	if( slab != NULL )
+	{
+		do
+		{
+			struct MemRange* currentMem = slab->pRange;			// takes the memrange off of the used list
+			if( currentMem->pPrev )
+			{
+				currentMem->pPrev->pNext = currentMem->pNext;
+			}
+
+			if( currentMem->pNext )
+			{
+				currentMem->pNext->pPrev = currentMem->pPrev;
+			}
+			
+			freeMem->pPrev->pNext = currentMem;				// adds the memory back to the free list
+			freeMem->pPrev = currentMem;
+			
+			currentSlab = currentSlab->pNext;
+		}while( currentSlab != NULL && startSlab != currentSlab );
+	}
+
+	return 1;
+}
+
 struct BufferList* createBuffer(void *base,uint objSize)
 {
-	void * addrSpace;
-	int i;
-	struct BufferList* prev; 
+	void * addrSpace = NULL;
+	int i = 0;
+	struct BufferList* prev = NULL; 
 	uint nbrObjects = (int)(BUFFER/(sizeof(struct BufferList)+objSize));
 	addrSpace=base;
 	prev=(struct BufferList *)addrSpace;
 	
 	prev->pPrev=NULL;
+	prev->pNext = NULL;
 	prev->pObject=(void *)((char*)addrSpace+(sizeof(struct BufferList)));
 	addrSpace=(void *)((char *)prev->pObject+objSize);
 
@@ -232,10 +296,10 @@ struct BufferList* createBuffer(void *base,uint objSize)
 	memBlock = malloc( TOTAL_MEMORY );
 }*/
 
-void* slabMalloc(uint elSize)
+void* slabAlloc(uint elSize)
 {
-	int i,j;
-	struct Slab* currentSlab;
+	int i = 0,j = 0;
+	struct Slab* currentSlab = NULL;
 	void* memoryToReturn = NULL;
 	struct SlabCacheList* cacheToUse = cacheHead;
 	while( cacheToUse != NULL )
@@ -257,28 +321,28 @@ void* slabMalloc(uint elSize)
 	
 	if (cacheToUse->freeObj>0)
 	{
-	while( currentSlab != NULL )
-	{
-		if( currentSlab->nbFree > 0 )	// if the slab has free space, we can allocate in it
+		while( currentSlab != NULL )
 		{
-			struct BufferList* headBuffer = currentSlab->pFree;
-			memoryToReturn = headBuffer->pObject;		// first object on list is always going to be free, now we have to take if off the list (works like a queue)
-
-			if( headBuffer->pNext != NULL )
+			if( currentSlab->nbFree > 0 )	// if the slab has free space, we can allocate in it
 			{
-				headBuffer->pNext->pPrev = headBuffer->pPrev;	// reordering the list
-				headBuffer->pPrev->pNext = headBuffer->pNext;
+				struct BufferList* headBuffer = currentSlab->pFree;
+				memoryToReturn = headBuffer->pObject;		// first object on list is always going to be free, now we have to take if off the list (works like a queue)
+
+				if( headBuffer->pNext != NULL )
+				{
+					headBuffer->pNext->pPrev = headBuffer->pPrev;	// reordering the list
+					headBuffer->pPrev->pNext = headBuffer->pNext;
+				}
+				currentSlab->pFree = headBuffer->pNext;
+				headBuffer->pNext = NULL;
+				headBuffer->pPrev = NULL;
+				cacheToUse->freeObj--;
+				currentSlab->nbFree--;
+				break;
 			}
-			currentSlab->pFree = headBuffer->pNext;
-			headBuffer->pNext = NULL;
-			headBuffer->pPrev = NULL;
-			cacheToUse->freeObj--;
-			currentSlab->nbFree--;
-			break;
-		}
 		
-		currentSlab = currentSlab->pNext;
-	}
+			currentSlab = currentSlab->pNext;
+		}
 	}else{
 
 	}
@@ -297,9 +361,9 @@ uint slabFree( void* objectToFree )
 		while( currentSlab != NULL )
 		{
 			struct MemRange* currentRange = currentSlab->pRange;
-			if( currentRange->base <= objectToFree && currentRange->base + currentRange->nbBytes >= objectToFree)	// if within range need to check...
+			if( currentRange->base <= objectToFree && (char*)currentRange->base + currentRange->nbBytes >= objectToFree)	// if within range need to check...
 			{
-				struct BufferList* currentBuffer = currentSlab->firstObj;
+				struct BufferList* currentBuffer = (BufferList*)currentSlab->firstObj;
 				
 				while( currentBuffer != NULL )
 				{
@@ -318,10 +382,11 @@ uint slabFree( void* objectToFree )
 						}
 						
 						++currentSlab->nbFree;
+						++currentSlab->pCache->freeObj;
 						return 1;	// we did our job ^_^
 					}
 					
-					currentBuffer = (void*)(currentBuffer) + sizeof( struct BufferList*);
+					currentBuffer = (BufferList*)( (char*)(void*)(currentBuffer) + sizeof( struct BufferList*) );
 				}
 
 			}
@@ -331,7 +396,7 @@ uint slabFree( void* objectToFree )
 	}
 	
 	return 0;	// we failed.... the memory will never roam free
-}*/
+}
 
 /*struct SlabCacheList *createCache(uint size)
 {
@@ -346,5 +411,19 @@ uint slabFree( void* objectToFree )
 //http://stackoverflow.com/questions/227897/solve-the-memory-alignment-in-c-interview-question-that-stumped-me
 uint alignMemory(uint objSize)
 {
-	return objSize + 4 & ~0x03;
+	return objSize + 3 & ~0x03;
+}
+
+void slabCleanup()	// really just free...
+{
+	struct SlabCacheList* currentSlab = cacheHead;
+	struct SlabCacheList* nextSlab = NULL;
+	while( currentSlab != NULL )
+	{
+		nextSlab = currentSlab->pNext;
+		cacheDestroy( currentSlab );
+		currentSlab = nextSlab;
+	}
+	
+	free( memBlock );
 }

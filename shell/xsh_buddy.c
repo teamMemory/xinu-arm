@@ -39,19 +39,19 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	for( i = 0; i < 100; ++i )
 	{
 		printf("At malloc pos %d: ", i );
-		void* object = slabMalloc( sizeof(int) );
+		void* object = slabAlloc( sizeof(int) );
 		if( object == 0  )
 		{
 			printf( "Slab Malloc failed\n" );
 			break;
 		}
 		slabFree( object );
-		
 		if( object == 0 )
 		{
 			printf( "Free failed" );
 		}
 	}
+	slabCleanup();
 	printMemUsage();
 	endTime = clkticks;
 	
@@ -59,7 +59,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printf("Malloced memory in time of %d, %d\n", endTime);
 		
 
-		printMemUsage();
+	printMemUsage();
 	buddyDealloc();
 	
 	printf("Dealloced memory\n");
