@@ -45,6 +45,7 @@ struct Slab
 	struct Slab *pPrev;
 	struct Slab *pNext;
 	uint nbFree;
+	uint nbTotal;
 	struct BufferList *pFree;
 	void *firstObj; //memory address of the first element in the slab
 	struct MemRange *pRange;
