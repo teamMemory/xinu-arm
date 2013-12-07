@@ -158,7 +158,7 @@ bool buddySplit(struct buddynode* node)
 		// Get From Node Pool ----------------------------------------------
 
         struct buddynode* leftNode = buddyNodeFromPool();			// Node to manage children attributes
-		struct buddynode* rightNode = buddyNodeFromPool( 1 );		// Node to manage children attributes
+	struct buddynode* rightNode = buddyNodeFromPool( );		// Node to manage children attributes
 
         int childDepth = node->depth + 1;
 
@@ -264,7 +264,7 @@ struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node)
 					if( returnedNode )
 					{
 						// Swap bestNode if applicable
-						if( !bestNode || returnedNode->depth > bestNode->depth && (uint)returnedNode->depth <= desiredDepth )
+						if((( !bestNode || returnedNode->depth) > bestNode->depth) && ((uint)returnedNode->depth <= desiredDepth) )
 						{
 							if( !returnedNode->isUsed )
 							{
@@ -317,8 +317,9 @@ void buddyAllocNodePool(uint maxDepth)
 /**
 * BuddyNodeFromPool - Get a free node if any
 */
-struct buddynode* buddyNodeFromPool(uint offsetFromNext)
+struct buddynode* buddyNodeFromPool(void)
 {
+	unsigned int offsetFromNext = 0;
 	if( nodePool )
 	{
 		// Go through pool until Node memRegion is 0 ( Node is Free )
@@ -487,14 +488,14 @@ void buddyDealloc()
 * BuddyFragmentationAmount - Go through the Nodes and get the fragmentation
 * @return Fragmentation - Struct with amount allocated and amount possible
 */
-MemFrag buddyFragmentationAmount()
+struct MemFrag buddyFragmentationAmount()
 {
 	return buddyFragmentationAmount2(rootNode);
 }
 
-MemFrag buddyFragmentationAmount2(struct buddynode* node)
+struct MemFrag buddyFragmentationAmount2(struct buddynode* node)
 {
-	MemFrag fragmentation;
+	struct MemFrag fragmentation;
 	fragmentation.intFrag = 0;
 	fragmentation.memSize = 0;
 
@@ -509,12 +510,12 @@ MemFrag buddyFragmentationAmount2(struct buddynode* node)
 		else if( node->leftNode && node->rightNode )
 		{
 			// Left
-			MemFrag leftFrag = buddyFragmentationAmount2( node->leftNode );
+			struct MemFrag leftFrag = buddyFragmentationAmount2( node->leftNode );
 			fragmentation.intFrag += leftFrag.intFrag;
 			fragmentation.memSize += leftFrag.memSize;
 
 			// Right
-			MemFrag rightFrag = buddyFragmentationAmount2( node->rightNode );
+			struct MemFrag rightFrag = buddyFragmentationAmount2( node->rightNode );
 			fragmentation.intFrag += rightFrag.intFrag;
 			fragmentation.memSize += rightFrag.memSize;
 		}

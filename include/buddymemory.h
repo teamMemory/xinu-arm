@@ -29,7 +29,7 @@ struct buddynode
 
 // malloc and free operations
 void* buddyMalloc(uint numBytes);
-void buddyDealloc();
+void buddyDealloc(void);
 
 // accounting operations
 void buddyInit(uint buddyPageSize);
@@ -38,10 +38,10 @@ void buddyFree(void* base);
 
 
 void buddyAllocNodePool(uint maxDepth);
-struct buddynode* buddyNodeFromPool(uint offsetFromNext = 0);
+struct buddynode* buddyNodeFromPool(void);
 bool buddySplit(struct buddynode* node);
 struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node);
-MemFrag buddyFragmentationAmount();
-MemFrag buddyFragmentationAmount2(struct buddynode* node);
+struct MemFrag buddyFragmentationAmount(void);
+struct MemFrag buddyFragmentationAmount2(struct buddynode* node);
 
 #endif  /*_BUDDYMEMORY_H_*/
