@@ -11,7 +11,8 @@
 struct Node
 {
 	int taken;
-	int len;
+	int lenUsed;
+	int lenAvail;
 	void * mem;
 	struct Node * next;
 };
