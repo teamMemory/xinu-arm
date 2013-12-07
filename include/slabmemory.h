@@ -76,9 +76,9 @@ void slabInit();
 struct SlabCacheList *createCache(uint objSize);
 uint cacheDestroy(struct SlabCacheList *pCache);
 void *CacheAlloc(struct SlabCacheList * pCache);
-uint CacheFree(void *addr);
+uint cacheFree(void *addr);
 void* slabAlloc(uint elSize);
-void slabFree(void* base);
+uint slabFree(void* base);
 uint alignMemory(uint objSize);
 struct BufferList* createBuffer(void *base,uint objSize);
 #endif  /*_SLABMEMORY_H_*/

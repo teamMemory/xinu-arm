@@ -193,10 +193,11 @@ void* slabMalloc(uint elSize)
 			if( headBuffer->pNext != NULL )
 			{
 				headBuffer->pNext->pPrev = headBuffer->pPrev;	// reordering the list
-				headBuffer->pNext = NULL;
-				headBuffer->pPrev = NULL;
+				headBuffer->pPrev->pNext = headBuffer->pNext;
 			}
 			currentSlab->pFree = headBuffer->pNext;
+			headBuffer->pNext = NULL;
+			headBuffer->pPrev = NULL;
 			
 			currentSlab->nbFree--;
 			break;
@@ -208,6 +209,51 @@ void* slabMalloc(uint elSize)
 	// for now just returning rootnodes memory region
 	//return rootNode->memRegion;
 	return memoryToReturn;
+}
+
+uint slabFree( void* objectToFree )
+{
+	struct SlabCacheList* cacheToUse = cacheHead;	// cache space is non-contiguous by each slab is, by checking slab ranges we can search for the node
+	while( cacheToUse != NULL )
+	{
+		struct Slab* currentSlab = cacheToUse->pSlabList;
+		while( currentSlab != NULL )
+		{
+			struct MemRange* currentRange = currentSlab->pRange;
+			if( currentRange->base <= objectToFree && currentRange->base + currentRange->nbBytes >= objectToFree)	// if within range need to check...
+			{
+				struct BufferList* currentBuffer = currentSlab->firstObj;
+				
+				while( currentBuffer != NULL )
+				{
+					if( currentBuffer->pObject == objectToFree )
+					{
+						if( currentSlab->nbFree > 0 )
+						{
+							currentSlab->pFree->pPrev->pNext = currentBuffer;
+							currentBuffer->pPrev = currentSlab->pFree->pPrev;
+							currentBuffer->pNext = currentSlab->pFree;
+							currentSlab->pFree->pPrev = currentBuffer;
+						}
+						else
+						{
+							currentSlab->pFree = currentBuffer;
+						}
+						
+						++currentSlab->nbFree;
+						return 1;	// we did our job ^_^
+					}
+					
+					currentBuffer = (void*)(currentBuffer) + sizeof( struct BufferList*);
+				}
+
+			}
+			currentSlab = currentSlab->pNext;
+		}
+		cacheToUse = cacheToUse->pNext;
+	}
+	
+	return 0;	// we failed.... the memory will never roam free
 }
 
 /*struct SlabCacheList *createCache(uint size)

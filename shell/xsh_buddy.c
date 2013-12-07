@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <buddymemory.h>
 #include <slabmemory.h>
-#include <linkedListMalloc.h>
+//#include <linkedListMalloc.h>
 #include <stdio.h>
 #include <string.h>
 #include <memstat.h>
@@ -39,9 +39,17 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	for( i = 0; i < 100; ++i )
 	{
 		printf("At malloc pos %d: ", i );
-		if( slabMalloc( sizeof( int ) ) == 0  )
+		void* object = slabMalloc( sizeof(int) );
+		if( object == 0  )
 		{
 			printf( "Slab Malloc failed\n" );
+			break;
+		}
+		slabFree( object );
+		
+		if( object == 0 )
+		{
+			printf( "Free failed" );
 		}
 	}
 	printMemUsage();
@@ -62,15 +70,15 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	/// Linked List Test
 	//////////////////////////////////////////
 
-	void * loc;
-	printf("Allocating memory\n");
-	loc = linkedListMalloc(50);
-	printf("Memory allocated\n");
-	printf("Deallocating memory\n");
-	removeNode(loc);
-	printf("Memory deallocated");
-	printf("Freeing memory\n");
-	freeMemory();
-	printf("MemoryFreed\n");
+	//void * loc;
+	//printf("Allocating memory\n");
+	//loc = linkedListMalloc(50);
+	//printf("Memory allocated\n");
+	//printf("Deallocating memory\n");
+	//removeNode(loc);
+	//printf("Memory deallocated");
+	//printf("Freeing memory\n");
+	//freeMemory();
+	//printf("MemoryFreed\n");
 	return 0;
 }
