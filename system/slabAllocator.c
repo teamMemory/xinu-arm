@@ -79,5 +79,5 @@ struct SlabCacheList *createCache(uint size)
 //http://stackoverflow.com/questions/227897/solve-the-memory-alignment-in-c-interview-question-that-stumped-me
 int alignAmount( int size )
 {
-	return size + 4 & ~0x0F;
+	return size + 4 & ~0x03;
 }
