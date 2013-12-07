@@ -10,8 +10,8 @@
 bool showDebugMSGS = TRUE;		// Show the debug messages as they arise
 
 struct buddynode* rootNode;		// The root node of the tree of Nodes managing the allocated memory
-int maxDepth;					// Farthest possible depth, can be calculated based on Page Size
-int pageSize = 0;				// The size of the page allocated
+int maxDepth;				// Farthest possible depth, can be calculated based on Page Size
+int pageSize = 0;			// The size of the page allocated
 
 struct buddynode* nodePool;		// Pool of nodes for the tree
 uint nodePoolCount = 0;
@@ -21,11 +21,14 @@ struct buddynode** nodeTraversalList;	// This is used to keep track of nodes dur
 /**
 * BuddyInit - Initialize the Page allocation and Pool of Nodes
 * @param  buddyPageSize - the size of the page requested to allocate
+* @return allocatedCorrectly - returns the final status of initialization
 */
-void buddyInit(uint buddyPageSize)
+bool buddyInit(uint buddyPageSize)
 {
 	/// Set before - Note should be based off of BuddyPageSize
 	maxDepth = 0;
+
+	bool errorFree = TRUE;	// Keep track and see if the allocation hasnt broke
 
 	// Max depth is two depths less than max possible
 	uint depthSize = buddyPageSize;
@@ -42,23 +45,53 @@ void buddyInit(uint buddyPageSize)
 	if( maxDepth > 0 )
 	{
 		// Allocate Node Pool
-		buddyAllocNodePool( maxDepth );
+		errorFree = errorFree && buddyAllocNodePool( maxDepth );
 
-		// To be implemented fully. Temporary allocation made
-		// For now allocating new memory for each node. We should fix in the future
-		rootNode = buddyNodeFromPool();
-		rootNode->memRegion = malloc( buddyPageSize );
-		pageSize = buddyPageSize;
+		if( errorFree )
+		{
+			// To be implemented fully. Temporary allocation made
+			// For now allocating new memory for each node. We should fix in the future
+			rootNode = buddyNodeFromPool( 0 );
 
-		// Allocate node traversal list
-		nodeTraversalList = ( struct buddynode** )malloc( sizeof( struct buddynode* ) * maxDepth + 1 );
+			if( rootNode )
+			{
+				rootNode->memRegion = malloc( buddyPageSize );
+				pageSize = buddyPageSize;
+
+				errorFree = errorFree && rootNode->memRegion;
+
+				if( errorFree )
+				{
+					// Allocate node traversal list
+					nodeTraversalList = ( struct buddynode** )malloc( sizeof( struct buddynode* ) * maxDepth + 1 );
+					errorFree = errorFree && nodeTraversalList;
+				}
+			}
+			// Cannot find free node for the root
+			else
+			{
+				errorFree = FALSE;
+				if( showDebugMSGS ){ printf("Cannot find free node for the root\n"); }
+			}
+
+		}
 	}
 
 	// Buddy Page doesn't split evenly enough
 	else
 	{
 		if( showDebugMSGS ){ printf("Buddy Page doesn't split evenly enough\n"); }
+		maxDepth = 0;
 	}
+
+	// Error occurred during allocation clean up memory
+	if( !errorFree )
+	{
+		if( showDebugMSGS ){ printf("Error occurred during Page Allocation\n"); }
+		buddyDealloc();
+	}
+
+	return errorFree;
 }
 
 /**
@@ -73,8 +106,10 @@ void* buddyAlloc(uint numBytes)
 	// Allocate the root if non-existent
 	if( rootNode == NULL )
 	{
-		buddyInit(numBytes);
-		memorySection = rootNode->memRegion;
+		if( buddyInit(numBytes) )
+		{
+			memorySection = rootNode->memRegion;
+		}
 	}
     else
     {
@@ -146,7 +181,7 @@ void* buddyAlloc(uint numBytes)
 /**
 * BuddySplit - Splits a Node into two parts
 * @param  Node - the node being split
-* @return splitWorked - returns if the split occured
+* @return splitWorked - returns if the split occurred
 */
 bool buddySplit(struct buddynode* node)
 {
@@ -157,8 +192,8 @@ bool buddySplit(struct buddynode* node)
         // Allocate memory for the Nodes
 		// Get From Node Pool ----------------------------------------------
 
-        struct buddynode* leftNode = buddyNodeFromPool();			// Node to manage children attributes
-	struct buddynode* rightNode = buddyNodeFromPool( );	//previously 1	// Node to manage children attributes
+        struct buddynode* leftNode = buddyNodeFromPool( 0 );			// Node to manage children attributes
+		struct buddynode* rightNode = buddyNodeFromPool( 1 );			// Node to manage children attributes
 
         int childDepth = node->depth + 1;
 
@@ -264,7 +299,7 @@ struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node)
 					if( returnedNode )
 					{
 						// Swap bestNode if applicable
-						if((( !bestNode || returnedNode->depth) > bestNode->depth) && ((uint)returnedNode->depth <= desiredDepth) )
+						if( !bestNode || ( returnedNode->depth > bestNode->depth && (uint)returnedNode->depth <= desiredDepth ) )
 						{
 							if( !returnedNode->isUsed )
 							{
@@ -282,11 +317,14 @@ struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node)
 /**
 * BuddyAllocNodePool - Based on the max depth of the tree, create a pool of nodes
 * @param  maxDepth - the max depth of the tree
+* @return memoryAllocatedCorrectly - whether memory allocated correctly
 */
-void buddyAllocNodePool(uint maxDepth)
+bool buddyAllocNodePool(uint maxDepth)
 {
-	// Setup Node pool - based on maxdepth
+		// Set-up Node pool - based on maxdepth
 		uint nodesToAllocate = 0;				// Amount of nodes to alloc
+
+		bool memoryAllocatedCorrectly = FALSE;
 
 		// Based on half the maxdepth + half-maxdepth of one side
 
@@ -300,7 +338,7 @@ void buddyAllocNodePool(uint maxDepth)
 		uint MaxNodesToAllocate = 1 << ( maxDepth + 1 );	// 2^(depth) * 2 - 1;
 		MaxNodesToAllocate -= 1;
 		
-		// Subtract half divde by half
+		// Subtract half divide by half
 		MaxNodesToAllocate -= nodesToAllocate;
 		MaxNodesToAllocate >>= 1;
 
@@ -310,16 +348,21 @@ void buddyAllocNodePool(uint maxDepth)
 		nodePoolCount = nodesToAllocate;
 		nodePool = (struct buddynode*)malloc( sizeof(struct buddynode) * nodesToAllocate );
 
+		memoryAllocatedCorrectly = nodePool;
+
 		// Clear all Nodes to default
-		memset( nodePool, 0, sizeof(struct buddynode) * nodesToAllocate );
+		if( nodePool ){ memset( nodePool, 0, sizeof(struct buddynode) * nodesToAllocate ); }
+
+		return memoryAllocatedCorrectly;
 }
 
 /**
 * BuddyNodeFromPool - Get a free node if any
+* @param offsetFromNext - From the first free node find the nth after that
+* @return freeNode
 */
-struct buddynode* buddyNodeFromPool(void)
+struct buddynode* buddyNodeFromPool(uint offsetFromNext)
 {
-	unsigned int offsetFromNext = 0;
 	if( nodePool )
 	{
 		// Go through pool until Node memRegion is 0 ( Node is Free )
@@ -359,136 +402,173 @@ void buddyFree(void* base)
 	uint segmentSize = pageSize;				// The size of the current memory segment
 	memoryNode = rootNode;
 
-	int baseAddress = (int)base;
-	int rootNodeMemAddress = (int)rootNode->memRegion;
-	int nodesMemRegion;
-
-	bool previousMemoryCleared = FALSE;
-
-	// Check if the address is in Bounds of the Page
-	if( rootNodeMemAddress <= baseAddress && rootNodeMemAddress + pageSize >= baseAddress )
+	if( rootNode )
 	{
-		// Traverse tree based on address, and check if it is valid
-		while( memoryNode )
+
+		int baseAddress = (int)base;
+		int rootNodeMemAddress = (int)rootNode->memRegion;
+		int nodesMemRegion;
+
+		bool previousMemoryCleared = FALSE;
+
+		// Check if the address is in Bounds of the Page
+		if( rootNodeMemAddress <= baseAddress && rootNodeMemAddress + pageSize >= baseAddress )
 		{
-			nodesMemRegion = (int)memoryNode->memRegion;
-
-			nodeTraversalList[memoryNode->depth] = memoryNode;
-
-			// Memory address almost found
-			if( nodesMemRegion == baseAddress )
+			// Traverse tree based on address, and check if it is valid
+			while( memoryNode )
 			{
-				// Check to see if node is allocated
+				nodesMemRegion = (int)memoryNode->memRegion;
 
-				// Parent Node to child - head left
-				if( !memoryNode->isUsed )
+				nodeTraversalList[memoryNode->depth] = memoryNode;
+
+				// Memory address almost found
+				if( nodesMemRegion == baseAddress )
+				{
+					// Check to see if node is allocated
+
+					// Parent Node to child - head left
+					if( !memoryNode->isUsed )
+					{
+						parentNode = memoryNode;
+						memoryNode = parentNode->leftNode;
+
+						// Memory was freed already
+						if( !memoryNode )
+						{
+							if( showDebugMSGS ){ printf("Memory already freed"); }
+						}
+					}
+				
+					// Child Node Found
+					else
+					{
+						int maxDepthReached = memoryNode->depth;
+
+						int i = maxDepthReached;
+						for( i; i >= 1; --i )
+						{
+
+							parentNode = nodeTraversalList[i - 1];
+							memoryNode = nodeTraversalList[i];
+
+							// Determine Side - Left is equal to
+							if( ( memoryNode->memRegion || previousMemoryCleared ) && parentNode->memRegion )
+							{
+								// Clear memory allocated
+								uint sizeOfMemoryChunk = pageSize >> memoryNode->depth;		// Get size of memory Chunk to clear out
+								if( memoryNode->memRegion ){ memset( memoryNode->memRegion, 0, sizeOfMemoryChunk ); }
+								memoryNode->isUsed = FALSE;
+
+								// Check if Node can be UnSplit ( child nodes are unused )
+								struct buddynode* parentLeftNode = parentNode->leftNode;
+								struct buddynode* parentRightNode = parentNode->rightNode;
+
+								if( !( (parentLeftNode->isUsed) || (parentLeftNode->leftNode) || (parentLeftNode->rightNode) || 
+										(parentRightNode->isUsed) || (parentRightNode->leftNode) || (parentRightNode->rightNode) ) )
+								{
+									// Clear memory Nodes
+									memset( parentNode->leftNode, 0, sizeof(struct buddynode) );
+									memset( parentNode->rightNode, 0, sizeof(struct buddynode) );
+									previousMemoryCleared = TRUE;
+
+									parentNode->leftNode = NULL;
+									parentNode->rightNode = NULL;
+								}
+
+								// Memory cannot be merged any more
+								else
+								{
+									break;
+								}
+							}
+						}
+						memoryNode = NULL;		// Break loop
+					}
+				}
+
+
+				// Left - left of the right child's memory
+				else if( memoryNode->rightNode && (int)memoryNode->rightNode->memRegion > baseAddress )
 				{
 					parentNode = memoryNode;
 					memoryNode = parentNode->leftNode;
-
-					// Memory was freed already
-					if( !memoryNode )
-					{
-						if( showDebugMSGS ){ printf("Memory already freed"); }
-					}
 				}
-				
-				// Child Node Found
+			
+				// Right - to the left of the edge of the segment
+				else if(memoryNode->leftNode && (int)memoryNode->leftNode->memRegion + (int)segmentSize >= baseAddress )
+				{
+					parentNode = memoryNode;
+					memoryNode = parentNode->rightNode;
+				}
+
+				// Bad address
 				else
 				{
-					int maxDepthReached = memoryNode->depth;
-
-					int i = maxDepthReached;
-					for( i; i >= 1; --i )
-					{
-
-						parentNode = nodeTraversalList[i - 1];
-						memoryNode = nodeTraversalList[i];
-
-						// Determine Side - Left is equal to
-						if( ( memoryNode->memRegion || previousMemoryCleared ) && parentNode->memRegion )
-						{
-							// Clear memory allocated
-							uint sizeOfMemoryChunk = pageSize >> memoryNode->depth;		// Get size of memory Chunk to clear out
-							memset( memoryNode->memRegion, 0, sizeOfMemoryChunk );
-							memoryNode->isUsed = FALSE;
-
-							// Check if Node can be UnSplit ( child nodes are unused )
-							struct buddynode* parentLeftNode = parentNode->leftNode;
-							struct buddynode* parentRightNode = parentNode->rightNode;
-
-							if( !(parentLeftNode->isUsed) && !(parentLeftNode->leftNode) && !(parentLeftNode->rightNode) && 
-								!(parentRightNode->isUsed) && !(parentRightNode->leftNode) && !(parentRightNode->rightNode) )
-							{
-								// Clear memory Nodes
-								memset( parentNode->leftNode, 0, sizeof(struct buddynode) );
-								memset( parentNode->rightNode, 0, sizeof(struct buddynode) );
-								previousMemoryCleared = TRUE;
-
-								parentNode->leftNode = NULL;
-								parentNode->rightNode = NULL;
-							}
-
-							// Memory cannot be merged any more
-							else
-							{
-								break;
-							}
-						}
-					}
-					memoryNode = NULL;		// Break loop
+					// Bad address given
+					if( showDebugMSGS ){ printf("Bad address or Already freed"); }
+					memoryNode = NULL;
 				}
-			}
 
-
-			// Left - left of the right child's memory
-			else if( memoryNode->rightNode && (int)memoryNode->rightNode->memRegion > baseAddress )
-			{
-				parentNode = memoryNode;
-				memoryNode = parentNode->leftNode;
+				segmentSize >>= 1;			// Prepare size for next section
 			}
-			
-			// Right - to the left of the edge of the segment
-			else if(memoryNode->leftNode && (int)memoryNode->leftNode->memRegion + (int)segmentSize >= baseAddress )
-			{
-				parentNode = memoryNode;
-				memoryNode = parentNode->rightNode;
-			}
+		}
 
-			// Bad address
-			else
-			{
-				// Bad address given
-				if( showDebugMSGS ){ printf("Bad address or Already freed"); }
-				memoryNode = NULL;
-			}
-
-			segmentSize >>= 1;			// Prepare size for next section
+		// Address was outside of the Page
+		else
+		{
+			if( showDebugMSGS ){ printf("Address is outside the bounds of the page"); }
 		}
 	}
 
-	// Address was outside of the Page
+	// No root node
 	else
 	{
-		if( showDebugMSGS ){ printf("Address is outside the bounds of the page"); }
+		if( showDebugMSGS ){ printf("Cannot Free non allocated Page"); }
 	}
+
+	// Clear traversal list
+	if( nodeTraversalList ){ memset(nodeTraversalList, 0, sizeof( struct buddynode* ) * maxDepth + 1); }
 }
 
 /**
-* BuddyDealloc - Removes all of the memory allocated
+* BuddyDealloc - Remove and clear all of the memory allocated
 */
-void buddyDealloc()
+void buddyDealloc(void)
 {
-	free(rootNode->memRegion);
-	free(nodePool);
-	free(nodeTraversalList);
+	if( rootNode->memRegion )
+	{
+		memset( rootNode->memRegion, 0, pageSize );
+		free( rootNode->memRegion );
+	}
+
+	if( nodePool )
+	{
+		memset( nodePool, 0, sizeof(struct buddynode) * nodePoolCount );
+		free( nodePool );
+	}
+
+	if( nodeTraversalList )
+	{
+		memset( nodeTraversalList, 0, sizeof( struct buddynode* ) * maxDepth + 1 );
+		free( nodeTraversalList );
+	}
+
+	// Clear variables
+	rootNode = NULL;
+	maxDepth = 0;
+	pageSize = 0;
+
+	nodePool = NULL;
+	nodePoolCount = 0;
+
+	nodeTraversalList = NULL;
 }
 
 /**
 * BuddyFragmentationAmount - Go through the Nodes and get the fragmentation
 * @return Fragmentation - Struct with amount allocated and amount possible
 */
-struct MemFrag buddyFragmentationAmount()
+struct MemFrag buddyFragmentationAmount(void)
 {
 	return buddyFragmentationAmount2(rootNode);
 }
