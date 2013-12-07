@@ -75,3 +75,9 @@ struct SlabCacheList *createCache(uint size)
 	
 	return 	newCache = (struct SlabCacheList*)(&memBlock->prev + sizeof(struct SlabCacheList);	// creates new cache from memory
 }
+
+//http://stackoverflow.com/questions/227897/solve-the-memory-alignment-in-c-interview-question-that-stumped-me
+int alignAmount( int size )
+{
+	return size + 4 & ~0x0F;
+}

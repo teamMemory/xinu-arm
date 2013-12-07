@@ -73,4 +73,5 @@ uint cacheDestroy(struct SlabCacheList *pCache);
 void* slabAlloc(uint elSize);
 void slabFree(void* base);
 
+int alignAmount( int size );
 #endif  /*_SLABMEMORY_H_*/
