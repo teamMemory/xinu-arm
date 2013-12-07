@@ -210,16 +210,3 @@ struct MemFrag getFrag()
 	return frag;
 }
 
-int main()
-{
-	void * loc;
-	printf("Allocating memory\n");
-	loc = linkedListMalloc(56);
-	printf("Memory allocated\n");
-	printf("Deallocating memory\n");
-	removeNode(loc);
-	printf("Memory deallocated\n");
-	printf("Freeing memory\n");
-	freeMemory();
-	printf("Memory Freed\n");
-}
