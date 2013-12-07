@@ -71,7 +71,7 @@ bool buddyInit(uint buddyPageSize)
 			else
 			{
 				errorFree = FALSE;
-				if( showDebugMSGS ){ printf("Cannot find free node for the root\n"); }
+				if( showDebugMSGS ){ printf("Cannot find free node for the root.\n"); }
 			}
 
 		}
@@ -80,7 +80,7 @@ bool buddyInit(uint buddyPageSize)
 	// Buddy Page doesn't split evenly enough
 	else
 	{
-		if( showDebugMSGS ){ printf("Buddy Page doesn't split evenly enough\n"); }
+		if( showDebugMSGS ){ printf("Buddy Page doesn't split evenly enough.\n"); }
 		maxDepth = 0;
 		errorFree = FALSE;
 	}
@@ -88,7 +88,7 @@ bool buddyInit(uint buddyPageSize)
 	// Error occurred during allocation clean up memory
 	if( !errorFree )
 	{
-		if( showDebugMSGS ){ printf("Error occurred during Page Allocation\n"); }
+		if( showDebugMSGS ){ printf("Error occurred during Page Allocation.\n"); }
 		buddyDealloc();
 	}
 
@@ -435,7 +435,7 @@ void buddyFree(void* base)
 						// Memory was freed already
 						if( !memoryNode )
 						{
-							if( showDebugMSGS ){ printf("Memory already freed"); }
+							if( showDebugMSGS ){ printf("Memory already freed.\n"); }
 						}
 					}
 				
@@ -505,7 +505,7 @@ void buddyFree(void* base)
 				else
 				{
 					// Bad address given
-					if( showDebugMSGS ){ printf("Bad address or Already freed"); }
+					if( showDebugMSGS ){ printf("Bad address or Already freed.\n"); }
 					memoryNode = NULL;
 				}
 
@@ -516,14 +516,14 @@ void buddyFree(void* base)
 		// Address was outside of the Page
 		else
 		{
-			if( showDebugMSGS ){ printf("Address is outside the bounds of the page"); }
+			if( showDebugMSGS ){ printf("Address is outside the bounds of the page.\n"); }
 		}
 	}
 
 	// No root node
 	else
 	{
-		if( showDebugMSGS ){ printf("Cannot Free non allocated Page"); }
+		if( showDebugMSGS ){ printf("Cannot Free non allocated Page.\n"); }
 	}
 
 	// Clear traversal list
