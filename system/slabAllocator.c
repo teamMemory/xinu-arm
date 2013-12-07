@@ -71,7 +71,12 @@ struct SlabCacheList *createCache(uint objSize)
 			printf("There is not enough memory to create the cache!!!\n");
 	}else{
 		lastCache=cacheHead;
-		while(lastCache->pNext !=NULL) lastCache=lastCache->pNext;
+		
+		while(lastCache->pNext !=NULL)
+		{
+			lastCache=lastCache->pNext;
+		}
+		
 		cacheEl=(struct SlabCacheList *)current->base;
 		lastCache->pNext=cacheEl;
 		cacheEl->pPrev=lastCache;
@@ -160,13 +165,13 @@ void* slabMalloc(uint elSize)
 {
 	int i,j;
 	struct SlabCacheList* cacheToUse = cacheHead;
-	while( cacheHead != NULL )
+	while( cacheToUse != NULL )
 	{
 		if( cacheToUse->objSize == elSize )
 		{
 			break;
 		}
-		cacheHead = cacheHead->pNext;
+		cacheToUse = cacheToUse->pNext;
 	}
 	
 	if( cacheToUse == NULL )
@@ -174,7 +179,7 @@ void* slabMalloc(uint elSize)
 		cacheToUse = createCache(elSize);
 	}
 	
-	struct Slab* currentSlab = cacheHead->pSlabList;	// need to get way of getting this....
+	struct Slab* currentSlab = cacheToUse->pSlabList;	// need to get way of getting this....
 	
 	
 	void* memoryToReturn = NULL;

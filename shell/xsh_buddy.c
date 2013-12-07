@@ -18,7 +18,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	
 	ulong startTime = clkticks;
 	buddyMalloc(1024);
-	for( i = 0; i < 10000000000; ++i )
+	for( i = 0; i < 100; ++i )
 	{
 		if( buddyMalloc(5) == 0 )
 		{
@@ -28,19 +28,29 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	}
 	
 	ulong endTime = clkticks;
-	for( i = 0; i < 100; ++i )
-	{
-		if(!( slabMalloc(sizeof(int)) != NULL && slabMalloc(sizeof(char)) != NULL && slabMalloc(sizeof(short)) != NULL && slabMalloc(sizeof(long)) != NULL && slabMalloc(sizeof(bool)) != NULL ))
-		{
-			printf("Failed to allocate: %d", i);
-			break;
-		}
-	}
 	endTime -= startTime;
-	printf("Malloced memory in time of %d, %d\n", startTime, endTime);
 	
 	printMemUsage();
+	printf("Malloced memory in time of %d, %d\n", endTime);
 	
+	slabInit();
+	startTime = clkticks;
+	for( i = 0; i < 100; ++i )
+	{
+		printf("At malloc pos %d: ", i );
+		if( slabMalloc( sizeof( int ) ) == 0  )
+		{
+			printf( "Slab Malloc failed\n" );
+		}
+	}
+	printMemUsage();
+	endTime = clkticks;
+	
+	endTime-=startTime;
+	printf("Malloced memory in time of %d, %d\n", endTime);
+		
+
+		printMemUsage();
 	buddyDealloc();
 	
 	printf("Dealloced memory\n");
