@@ -347,7 +347,6 @@ bool buddyAllocNodePool(uint maxDepth)
 
 		nodePoolCount = nodesToAllocate;
 		nodePool = (struct buddynode*)malloc( sizeof(struct buddynode) * nodesToAllocate );
-
 		memoryAllocatedCorrectly = nodePool;
 
 		// Clear all Nodes to default
@@ -535,22 +534,25 @@ void buddyFree(void* base)
 */
 void buddyDealloc(void)
 {
-	if( rootNode->memRegion )
+	if( rootNode )
 	{
-		memset( rootNode->memRegion, 0, pageSize );
-		free( rootNode->memRegion );
-	}
+		if( rootNode->memRegion )
+		{
+			memset( rootNode->memRegion, 0, pageSize );
+			free( rootNode->memRegion );
+		}
 
-	if( nodePool )
-	{
-		memset( nodePool, 0, sizeof(struct buddynode) * nodePoolCount );
-		free( nodePool );
-	}
+		if( nodePool )
+		{
+			memset( nodePool, 0, sizeof(struct buddynode) * nodePoolCount );
+			free( nodePool );
+		}
 
-	if( nodeTraversalList )
-	{
-		memset( nodeTraversalList, 0, sizeof( struct buddynode* ) * (maxDepth + 1) );
-		free( nodeTraversalList );
+		if( nodeTraversalList )
+		{
+			memset( nodeTraversalList, 0, sizeof( struct buddynode* ) * (maxDepth + 1) );
+			free( nodeTraversalList );
+		}
 	}
 
 	// Clear variables
