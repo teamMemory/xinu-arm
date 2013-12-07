@@ -63,7 +63,7 @@ bool buddyInit(uint buddyPageSize)
 				if( errorFree )
 				{
 					// Allocate node traversal list
-					nodeTraversalList = ( struct buddynode** )malloc( sizeof( struct buddynode* ) * maxDepth + 1 );
+					nodeTraversalList = ( struct buddynode** )malloc( sizeof( struct buddynode* ) * (maxDepth + 1) );
 					errorFree = errorFree && nodeTraversalList;
 				}
 			}
@@ -71,7 +71,7 @@ bool buddyInit(uint buddyPageSize)
 			else
 			{
 				errorFree = FALSE;
-				if( showDebugMSGS ){ printf("Cannot find free node for the root\n"); }
+				if( showDebugMSGS ){ printf("Cannot find free node for the root.\n"); }
 			}
 
 		}
@@ -80,14 +80,15 @@ bool buddyInit(uint buddyPageSize)
 	// Buddy Page doesn't split evenly enough
 	else
 	{
-		if( showDebugMSGS ){ printf("Buddy Page doesn't split evenly enough\n"); }
+		if( showDebugMSGS ){ printf("Buddy Page doesn't split evenly enough.\n"); }
 		maxDepth = 0;
+		errorFree = FALSE;
 	}
 
 	// Error occurred during allocation clean up memory
 	if( !errorFree )
 	{
-		if( showDebugMSGS ){ printf("Error occurred during Page Allocation\n"); }
+		if( showDebugMSGS ){ printf("Error occurred during Page Allocation.\n"); }
 		buddyDealloc();
 	}
 
@@ -127,11 +128,11 @@ void* buddyAlloc(uint numBytes)
         // Make sure desiredDepth doesn't pass maxDepth
         if( desiredDepth > maxDepth )
         {   
-			if( showDebugMSGS ){ printf("Memory request is to small.\n"); }
+			desiredDepth = maxDepth;
 		}
 
 		// Negative desiredDepth means - Amount to allocate is larger than BUDDY_PAGE_SIZE   
-		else if( desiredDepth == MEMORY_DEPTH_REQUEST_ERROR )
+		if( desiredDepth == MEMORY_DEPTH_REQUEST_ERROR )
 		{
 			if( showDebugMSGS ){ printf("Memory request is larger than page size.\n"); }
 		}
@@ -347,7 +348,6 @@ bool buddyAllocNodePool(uint maxDepth)
 
 		nodePoolCount = nodesToAllocate;
 		nodePool = (struct buddynode*)malloc( sizeof(struct buddynode) * nodesToAllocate );
-
 		memoryAllocatedCorrectly = nodePool;
 
 		// Clear all Nodes to default
@@ -435,7 +435,7 @@ void buddyFree(void* base)
 						// Memory was freed already
 						if( !memoryNode )
 						{
-							if( showDebugMSGS ){ printf("Memory already freed"); }
+							if( showDebugMSGS ){ printf("Memory already freed.\n"); }
 						}
 					}
 				
@@ -505,7 +505,7 @@ void buddyFree(void* base)
 				else
 				{
 					// Bad address given
-					if( showDebugMSGS ){ printf("Bad address or Already freed"); }
+					if( showDebugMSGS ){ printf("Bad address or Already freed.\n"); }
 					memoryNode = NULL;
 				}
 
@@ -516,14 +516,14 @@ void buddyFree(void* base)
 		// Address was outside of the Page
 		else
 		{
-			if( showDebugMSGS ){ printf("Address is outside the bounds of the page"); }
+			if( showDebugMSGS ){ printf("Address is outside the bounds of the page.\n"); }
 		}
 	}
 
 	// No root node
 	else
 	{
-		if( showDebugMSGS ){ printf("Cannot Free non allocated Page"); }
+		if( showDebugMSGS ){ printf("Cannot Free non allocated Page.\n"); }
 	}
 
 	// Clear traversal list
@@ -535,22 +535,25 @@ void buddyFree(void* base)
 */
 void buddyDealloc(void)
 {
-	if( rootNode->memRegion )
+	if( rootNode )
 	{
-		memset( rootNode->memRegion, 0, pageSize );
-		free( rootNode->memRegion );
-	}
+		if( rootNode->memRegion )
+		{
+			memset( rootNode->memRegion, 0, pageSize );
+			free( rootNode->memRegion );
+		}
 
-	if( nodePool )
-	{
-		memset( nodePool, 0, sizeof(struct buddynode) * nodePoolCount );
-		free( nodePool );
-	}
+		if( nodePool )
+		{
+			memset( nodePool, 0, sizeof(struct buddynode) * nodePoolCount );
+			free( nodePool );
+		}
 
-	if( nodeTraversalList )
-	{
-		memset( nodeTraversalList, 0, sizeof( struct buddynode* ) * maxDepth + 1 );
-		free( nodeTraversalList );
+		if( nodeTraversalList )
+		{
+			memset( nodeTraversalList, 0, sizeof( struct buddynode* ) * (maxDepth + 1) );
+			free( nodeTraversalList );
+		}
 	}
 
 	// Clear variables
