@@ -16,12 +16,7 @@
 /// Globals
 /////////////////////////////////////////////////////
 
-
-//struct Node * root;	//will always point to the root node
-//struct Node * current;//will point to varying nodes as we traverse
-
 void * root;		//will always point to the root node
-
 int init = FALSE;	//states whether the allocator has been initialized.
 
 /////////////////////////////////////////////////////
@@ -47,7 +42,7 @@ void * initList(unsigned int userBytes)
 	nodeSize = sizeof(struct Node);
 	if (userBytes + nodeSize > POOL_SIZE)
 	{
-		printf("Block too large to allocate.");
+		printf("Block too large to allocate.\n");
 		return NULL;
 	}
 	printf("	Root Address: %p\n" , root);
@@ -116,7 +111,7 @@ void * insertNode(unsigned int userBytes)
 	{
 		//in this case we can't allocate the memory because
 		//we don't have sufficient space in the pool.
-		printf("Block too large to allocate.");
+		printf("Block too large to allocate.\n");
 		return NULL;
 	}
 
@@ -140,7 +135,7 @@ void removeNode(void * loc)
 	}
 	else 
 	{
-		printf("Loc hasn't been allocated.");
+		printf("Loc hasn't been allocated.\n");
 	}
 }
 
