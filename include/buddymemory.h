@@ -9,7 +9,7 @@
 #include <memory.h>
 #include <stdio.h>
 #include <stddef.h>
-#include "MemFrag.h"
+#include "memFrag.h"
 
 #define BUDDY_PAGE_SIZE 1024
 #define MEMORY_DEPTH_REQUEST_ERROR -1	// Depth request error

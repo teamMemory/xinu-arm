@@ -8,6 +8,8 @@
 #ifndef _LINKEDLISTMALLOC_H_
 #define _LINKEDLISTMALLOC_H_
 
+#include "memFrag.h"
+
 struct Node
 {
 	int taken;
@@ -22,4 +24,6 @@ void * linkedListMalloc(unsigned int nbytes);
 void * insertNode(unsigned int nbytes);
 void removeNode(void * loc);
 void * initList(unsigned int nbytes);
+void freeMemory();
+struct MemFrag getFrag();
 #endif //_LINKEDLISTMALLOC_H_
