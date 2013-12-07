@@ -1,7 +1,7 @@
 /**
  * @file slabAllocater.c
  * @author Artur Braga; Blake Gross
- * Manages the memory that is allocated
+ * Uses a SLAB allocation technique to allocate memory: http://koalys.pagesperso-orange.fr/eng/chapter/memory_management.html
  *
  */
 
@@ -9,36 +9,44 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-struct SlabCacheList *cacheHead;
-void* memBlock;
+struct SlabCacheList *cacheHead;	// the start of the cache, a linked list of linked lists of contiguous memory allocations. Each cache is of a certain length
+void* memBlock;						// chunk of memory from malloc we are dividing rest of memory up from
 
-struct MemRange *freeMem,*usedMem;
+struct MemRange *freeMem,*usedMem;	// start of list of free memory and used memory. Are doubly linked lists, non looping
 
+// Initializes the entire slab memory segment, also sets up first cache
 void slabInit()
 {
 	//alocating the memory pull
 	memBlock = malloc( TOTAL_MEMORY );
 	
+	// [			10240 bytes 								]
+	// [ Used memory block ] [ Free Memory Block ]
+	// [ 68                ] [ 10172             ]
+	
 	//usedMem node is the first to be in the memory
-	usedMem=(struct MemRange *)memBlock ;
+	usedMem=(struct MemRange *)memBlock;	// sets first chunk at start of memory
 	usedMem->pPrev=NULL;
 	usedMem->pNext=NULL;
 	usedMem->base=memBlock;
 	//a node of usedMem + node of freeMem+ node of  the first cache
-	usedMem->nbBytes=2*sizeof(struct MemRange)+sizeof(struct SlabCacheList);
+	usedMem->nbBytes=2*sizeof(struct MemRange)+sizeof(struct SlabCacheList);	// set to be total size of structure
 	//usedMem->nbPages=1; //////////////To define!!!!!!!!!!!!!!!!!!!!///////////
 	usedMem->pSlab=NULL;
 	
 	//alocating freeMem just after the used mem node
-	freeMem=(struct MemRange *)((char *)memBlock+sizeof(struct MemRange));                       ////////////////////////////////Workaround////////////////////////////////
+	freeMem=(struct MemRange *)((char *)memBlock+sizeof(struct MemRange));	// Free memory starts
 	freeMem->pPrev=NULL;
 	freeMem->pNext=NULL;
-	freeMem->base=(void * )((char *)usedMem->base+usedMem->nbBytes);
+	freeMem->base=(void * )((char *)usedMem->base+usedMem->nbBytes);	// offset by 
 	freeMem->nbBytes=TOTAL_MEMORY-usedMem->nbBytes;
 	//freeMem->nbPages=0; //////////////To define!!!!!!!!!!!!!!!!!!!!///////////
 	freeMem->pSlab=NULL;
 	
-
+	// [ Used memory block ]- 62 bytes
+	// [ MemRange ][ Slab Cache List ]
+	
+	// Start of the head dat for the cache
 	cacheHead=(struct SlabCacheList *)((char * ) memBlock+ 2*sizeof(struct MemRange));
 	cacheHead->pNext=NULL;
 	cacheHead->pPrev=NULL;
@@ -49,7 +57,7 @@ void slabInit()
 	cacheHead->pSlabList = NULL;
 }
 
-
+// Creates a new slab and adds it to the caches list. Slabs are contigious
 struct Slab * createNewSlab(struct SlabCacheList *cache)
 {
 	uint size = 0;
@@ -57,7 +65,8 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 	struct MemRange *current = NULL,*usedrange = NULL;
 	current=freeMem;
 	size=sizeof(struct Slab)+BUFFER;
-	//Going through the list of free memory chunks
+	
+	//Going through the list of free memory chunks until one is found that can satisfy the memory needed
 	while( current != NULL )
 	{
 		if( current->nbBytes>= size)
@@ -92,10 +101,13 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 		cache->freeObj+=cache->slabObjCnt;
 
 				usedrange=usedMem;
-		while( usedrange->pNext != NULL )usedrange=usedrange->pNext;
+		while( usedrange->pNext != NULL )
+		{
+			usedrange=usedrange->pNext;
+		}
 		
-		
-		if(current->nbBytes-size>sizeof(struct MemRange))
+		// if we can allocate more space we will
+		if(current->nbBytes-size > sizeof(struct MemRange))
 		{
 			struct MemRange *freeNode=NULL;
 			freeNode=(struct MemRange *)((char *)current->base+size+sizeof(struct MemRange));
@@ -124,6 +136,8 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 	}
 	return slabEl;
 }
+
+// Creates a cache of variable length
 struct SlabCacheList *createCache(uint objSize)
 {
 	struct SlabCacheList *lastCache = NULL;
@@ -211,6 +225,7 @@ struct SlabCacheList *createCache(uint objSize)
 	return cacheEl;
 }
 
+// Destroys a cache and all slabs inside of it
 uint cacheDestroy(struct SlabCacheList *pCache)
 {
 	struct Slab* startSlab = pCache->pSlabList;
@@ -242,6 +257,7 @@ uint cacheDestroy(struct SlabCacheList *pCache)
 	return 1;
 }
 
+// Destroys a slab
 uint slabDestroy(struct Slab* slab)
 {
 	struct Slab* startSlab = slab;
@@ -277,6 +293,7 @@ uint slabDestroy(struct Slab* slab)
 	return 1;
 }
 
+// Creates a buffer section inside of a slab (contiguously allocatd)
 struct BufferList* createBuffer(void *base,uint objSize)
 {
 	void * addrSpace = NULL;
@@ -304,11 +321,8 @@ struct BufferList* createBuffer(void *base,uint objSize)
 	prev->pNext->pPrev=prev;
 	return prev->pNext;
 }
-/*void slabInit()
-{
-	memBlock = malloc( TOTAL_MEMORY );
-}*/
 
+// "public" malloc function, used the allocate memory
 void* slabAlloc(uint elSize)
 {
 	int i = 0,j = 0;
@@ -376,6 +390,7 @@ void* slabAlloc(uint elSize)
 	return memoryToReturn;
 }
 
+// Frees up memory
 uint slabFree( void* objectToFree )
 {
 	struct SlabCacheList* cacheToUse = cacheHead;	// cache space is non-contiguous by each slab is, by checking slab ranges we can search for the node
@@ -427,23 +442,15 @@ uint slabFree( void* objectToFree )
 	return 0;	// we failed.... the memory will never roam free
 }
 
-/*struct SlabCacheList *createCache(uint size)
-{
-	if( memBlock == NULL )
-	{
-		slabInit();
-	}
-	
-	return 	newCache = (struct SlabCacheList*)(&memBlock->prev + sizeof(struct SlabCacheList);	// creates new cache from memory
-}*/
-
 //http://stackoverflow.com/questions/227897/solve-the-memory-alignment-in-c-interview-question-that-stumped-me
+// Aligns memory to a four byte boundry
 uint alignMemory(uint objSize)
 {
 	return objSize + 3 & ~0x03;
 }
 
-void slabCleanup()	// really just free...
+// Cleans up all the allocated space and then frees the mallocd memory
+void slabCleanup()	
 {
 	struct SlabCacheList* currentSlab = cacheHead;
 	struct SlabCacheList* nextSlab = NULL;
