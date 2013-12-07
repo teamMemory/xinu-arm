@@ -150,7 +150,7 @@ struct SlabCacheList *createCache(uint objSize)
 			lastCache=lastCache->pNext;
 		}
 		
-		cacheEl=(struct SlabCacheList *)current->base;
+		cacheEl=(struct SlabCacheList *)((char *)current->base+sizeof(struct MemRange));
 		lastCache->pNext=cacheEl;
 		cacheEl->pPrev=lastCache;
 		cacheEl->pNext=NULL;
@@ -160,7 +160,7 @@ struct SlabCacheList *createCache(uint objSize)
 		cacheEl->freeObj=cacheEl->slabObjCnt;
 
 
-		slabEl=(struct Slab *)((char *)current->base+sizeof(struct SlabCacheList));
+		slabEl=(struct Slab *)((char *)cacheEl+sizeof(struct SlabCacheList));
 		cacheEl->pSlabList=slabEl;
 		slabEl->pPrev=NULL;
 		slabEl->pNext=NULL;
@@ -168,8 +168,8 @@ struct SlabCacheList *createCache(uint objSize)
 		slabEl->pRange=current;
 		
 
-		slabEl->firstObj=(void *)((char *)current->base+sizeof(struct SlabCacheList)+sizeof(struct Slab));
-		slabEl->pFree=createBuffer(slabEl->firstObj,objSize);
+		slabEl->firstObj=(void *)((char *)slabEl+sizeof(struct Slab));
+		slabEl->pFree=createBuffer(slabEl->firstObj,cacheEl->allocSize);
 		slabEl->nbFree=cacheEl->slabObjCnt;
 		slabEl->nbTotal=cacheEl->slabObjCnt;
 
@@ -338,11 +338,10 @@ void* slabAlloc(uint elSize)
 				struct BufferList* headBuffer = currentSlab->pFree;
 				memoryToReturn = headBuffer->pObject;		// first object on list is always going to be free, now we have to take if off the list (works like a queue)
 
-				if( headBuffer->pNext != NULL )
-				{
+				
 					headBuffer->pNext->pPrev = headBuffer->pPrev;	// reordering the list
 					headBuffer->pPrev->pNext = headBuffer->pNext;
-				}
+				
 				currentSlab->pFree = headBuffer->pNext;
 				headBuffer->pNext = NULL;
 				headBuffer->pPrev = NULL;

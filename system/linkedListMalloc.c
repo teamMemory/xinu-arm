@@ -11,12 +11,6 @@
 
 
 #include "linkedListMalloc.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#define TRUE 1
-#define FALSE 0
-#define POOL_SIZE 1024
 
 /////////////////////////////////////////////////////
 /// Globals
