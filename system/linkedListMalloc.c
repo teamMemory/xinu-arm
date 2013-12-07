@@ -177,41 +177,36 @@ void * linkedListMalloc(unsigned int nbytes)
 	}
 }
 
+/*
+*	Frees the memory pool
+*/
 void freeMemory()
 {
 	free(root);
 }
 
+/*
+*	Returns the memory fragmentation of the pool
+*/
 struct MemFrag getFrag()
 {
 	struct MemFrag frag;
 	struct Node * curr;
-	unsigned int intFrag, extFrag;
+	unsigned int intFrag, allocatedMem;
 	intFrag = 0;
-	extFrag = 0;
+	allocatedMem = 0;
 	frag.memSize = POOL_SIZE;
 	curr = (struct Node *)root;
 
-	while (curr->next != NULL && curr->mem != loc)
+	while (curr->next != NULL)
 	{
-		//intFrag += ;
+		intFrag += (curr->lenAvail - curr->lenUsed);
+		allocatedMem += curr->lenAvail;
 		curr = curr->next;
 	}
 
-
+	frag.extFrag = POOL_SIZE - allocatedMem;
+	frag.intFrag = intFrag;
 	return frag;
 }
 
-int main()
-{
-	void * loc;
-	printf("Allocating memory\n");
-	loc = linkedListMalloc(56);
-	printf("Memory allocated\n");
-	printf("Deallocating memory\n");
-	removeNode(loc);
-	printf("Memory deallocated\n");
-	printf("Freeing memory\n");
-	freeMemory();
-	printf("Memory Freed\n");
-}

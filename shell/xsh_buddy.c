@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <buddymemory.h>
 #include <slabmemory.h>
+#include <linkedListMalloc.h>
 #include <stdio.h>
 #include <string.h>
 #include <memstat.h>
@@ -56,5 +57,20 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printf("Dealloced memory\n");
 	
 	printMemUsage();
+
+	//////////////////////////////////////////
+	/// Linked List Test
+	//////////////////////////////////////////
+
+	void * loc;
+	printf("Allocating memory\n");
+	loc = linkedListMalloc(50);
+	printf("Memory allocated\n");
+	printf("Deallocating memory\n");
+	removeNode(loc);
+	printf("Memory deallocated");
+	printf("Freeing memory\n");
+	freeMemory();
+	printf("MemoryFreed\n");
 	return 0;
 }
