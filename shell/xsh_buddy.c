@@ -18,15 +18,15 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	int i;
 	struct MemFrag frag;
 	ulong startTime = clkticks;
-	buddyMalloc(1024);
-	for( i = 0; i < 100; ++i )
-	{
-		if( buddyMalloc(5) == 0 )
-		{
-			printf( "Buddy Malloc failed\n" );
-			break;
-		}
-	}
+	//buddyMalloc(1024);
+	//for( i = 0; i < 100; ++i )
+	//{
+	//	if( buddyMalloc(5) == 0 )
+	//	{
+	//		printf( "Buddy Malloc failed\n" );
+	//		break;
+	//	}
+	//}
 	
 	ulong endTime = clkticks;
 	endTime -= startTime;
@@ -45,13 +45,12 @@ shellcmd xsh_buddy(int nargs, char *args[])
 			printf( "Slab Malloc failed\n" );
 			break;
 		}
-		slabFree( object );
-		if( object == 0 )
-		{
-			printf( "Free failed" );
-		}
+		//slabFree( object );
+		//if( object == 0 )
+		//{
+		//	printf( "Free failed" );
+		//}
 	}
-	slabCleanup();
 	printMemUsage();
 	endTime = clkticks;
 	
@@ -60,8 +59,9 @@ shellcmd xsh_buddy(int nargs, char *args[])
 		
 
 	printMemUsage();
-	buddyDealloc();
+	//buddyDealloc();
 	
+	slabCleanup();
 	printf("Dealloced memory\n");
 	
 	printMemUsage();
@@ -70,27 +70,27 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	/// Linked List Test
 	//////////////////////////////////////////
 
-	void * loc;
-	printf("Allocating memory\n");
-	loc = linkedListMalloc(50);
-	printf("Memory allocated\n");
-
-	frag = getFrag();
-	printf("Internal Frag: %i\n", frag.intFrag);
-	printf("External Frag: %i\n", frag.extFrag);
-	printf("Total memory: %i\n\n", frag.memSize);
-
-	printf("Deallocating memory\n");
-	removeNode(loc);
-	printf("Memory deallocated\n");
-
+	int k;
+	for(k=0; k < 1000; k++)
+	{
+		void * loc;
+		//printf("Allocating memory\n");
+		loc = linkedListMalloc(k % 100);
+		if(loc == NULL){
+			printf("%d failed\n",k);
+		}
+		//printf("Memory allocated\n");
+		//printf("Deallocating memory\n");
+		removeNode(loc);
+		//printf("Memory deallocated\n");
+		//printf("Freeing memory\n");
+		freeMemory();
+		//printf("MemoryFreed\n");
+	}	
 	frag = getFrag();
 	printf("\nInternal Frag: %i\n", frag.intFrag);
 	printf("External Frag: %i\n", frag.extFrag);
 	printf("Total memory: %i\n\n", frag.memSize);
 
-	printf("Freeing memory\n");
-	freeMemory();
-	printf("MemoryFreed\n");
 	return 0;
 }
