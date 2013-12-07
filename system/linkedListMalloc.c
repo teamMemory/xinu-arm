@@ -183,20 +183,24 @@ void freeMemory()
 */
 struct MemFrag getFrag()
 {
+
 	struct MemFrag frag;
 	struct Node * curr;
 	unsigned int intFrag, allocatedMem;
 	intFrag = 0;
 	allocatedMem = 0;
 	frag.memSize = POOL_SIZE;
+	
 	curr = (struct Node *)root;
-
-	while (curr->next != NULL)
+	if (curr == NULL)
 	{
+		return frag;
+	}
+	do{
 		intFrag += (curr->lenAvail - curr->lenUsed);
 		allocatedMem += curr->lenAvail;
 		curr = curr->next;
-	}
+	}while (curr->next != NULL);
 
 	frag.extFrag = POOL_SIZE - allocatedMem;
 	frag.intFrag = intFrag;

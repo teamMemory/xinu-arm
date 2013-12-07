@@ -16,7 +16,7 @@
 shellcmd xsh_buddy(int nargs, char *args[])
 {
 	int i;
-	
+	struct MemFrag frag;
 	ulong startTime = clkticks;
 	buddyMalloc(1024);
 	for( i = 0; i < 100; ++i )
@@ -74,9 +74,21 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printf("Allocating memory\n");
 	loc = linkedListMalloc(50);
 	printf("Memory allocated\n");
+
+	frag = getFrag();
+	printf("Internal Frag: %i\n", frag.intFrag);
+	printf("External Frag: %i\n", frag.extFrag);
+	printf("Total memory: %i\n\n", frag.memSize);
+
 	printf("Deallocating memory\n");
 	removeNode(loc);
-	printf("Memory deallocated");
+	printf("Memory deallocated\n");
+
+	frag = getFrag();
+	printf("\nInternal Frag: %i\n", frag.intFrag);
+	printf("External Frag: %i\n", frag.extFrag);
+	printf("Total memory: %i\n\n", frag.memSize);
+
 	printf("Freeing memory\n");
 	freeMemory();
 	printf("MemoryFreed\n");
