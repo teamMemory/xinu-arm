@@ -13,44 +13,51 @@
 
 //typedef enum {false,true}bool;
 #define TOTAL_MEMORY 10240	// 10 kb
-
+#define PAGE_SIZE 1024
+#define BUFFER 256
+// structure which will be used to keep track of free memory areas and occupied memory areas
 // structure which will be used to keep track of free memory areas and occupied memory areas
 struct MemRange
 {
 	struct MemRange *pNext;
 	struct MemRange *pPrev;
-	uint NbPages;
+	void * base;
+	uint nbBytes;
+	//uint nbPages;
 	struct Slab *pSlab;
-}
+};
+
+struct MemRange *freeMem,*usedMem;
 // Cache Structure containing the list of slabs
 struct SlabCacheList
 {
 	struct SlabCacheList *pPrev;
 	struct SlabCacheList *pNext;
-	uint objSize;
-	uint allocSize;
-	uint slabObjCnt;
-	uint freeObj;
+	uint objSize; // size of the object requested by the user
+	uint allocSize; //size really allocated by an object
+	uint slabObjCnt; // number of objects allocated by slab
+	uint freeObj; // number of free  objects 
+	//uint slabPagesCnt; //number of allocated pages by slab
 	struct Slab *pSlabList;
-}
+};
 //Slab structure containing the list of buffers
 struct Slab
 {
 	struct Slab *pPrev;
 	struct Slab *pNext;
-	uint NbFree;
+	uint nbFree;
 	struct BufferList *pFree;
 	void *firstObj; //memory address of the first element in the slab
 	struct MemRange *pRange;
 	struct SlabCacheList *pCache;
-}
+};
 //List of actual objects contained in the Slab
 struct BufferList
 {
 	struct BufferList *pPrev;
 	struct BufferList *pNext;
 	void *pObject;
-}
+};
 
 /*struct dataNode
 {
@@ -66,12 +73,13 @@ struct dataType
 };*/
 
 // accounting operations
-void slabInit(uint numEl);
-struct SlabCacheList *createCache(uint size);
+void slabInit();
+struct SlabCacheList *createCache(uint objSize);
 uint cacheDestroy(struct SlabCacheList *pCache);
-
+void *CacheAlloc(struct SlabCacheList * pCache);
+uint CacheFree(void *addr);
 void* slabAlloc(uint elSize);
 void slabFree(void* base);
-
-int alignAmount( int size );
+uint alignMemory(uint objSize);
+struct BufferList* createBuffer(void *base,uint objSize);
 #endif  /*_SLABMEMORY_H_*/
