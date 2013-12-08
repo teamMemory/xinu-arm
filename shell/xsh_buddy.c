@@ -33,7 +33,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	ulong startTime = clkticks;
 	
 	// initialization for buddy Malloc
-	printf( "---------------------Running Buddy Malloc Test----------------");
+	printf( "---------------------Running Buddy Malloc Test----------------\n");
 	
 	buddyMalloc(1024);
 	for( i = 0; i < 100; ++i )
@@ -52,7 +52,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printf("Malloced memory in time of %d, %d\n", endTime);
 	
 	
-	printf( "---------------------Running SLAB Malloc Test----------------");
+	printf( "---------------------Running SLAB Malloc Test----------------\n");
 	slabInit();	// SLAB initialzation
 	startTime = clkticks;
 	for( i = 0; i < 100; ++i )
@@ -84,7 +84,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printMemUsage();
 
 	
-	printf( "---------------------Running Linked List Malloc Test----------------");
+	printf( "---------------------Running Linked List Malloc Test----------------\n");
 	////////////////////////////////////////////
 	///// Linked List Test
 	////////////////////////////////////////////
