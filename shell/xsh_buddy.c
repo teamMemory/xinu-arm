@@ -13,6 +13,19 @@
 #include <memstat.h>
 #include <clock.h>
 
+struct testStruct
+{
+	int a;
+	double b;
+	double c;
+	double d;
+	double e;
+	double f;
+	char g;
+	char h;
+	int i;
+};
+
 shellcmd xsh_buddy(int nargs, char *args[])
 {
 	int i;
@@ -39,13 +52,14 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	for( i = 0; i < 100; ++i )
 	{
 		printf("At malloc pos %d: ", i );
-		void* object = slabAlloc( sizeof(int) );
+		void* object = slabAlloc( sizeof(struct testStruct) );
+		void* object2 = slabAlloc( sizeof(long) );
 		if( object == 0  )
 		{
 			printf( "Slab Malloc failed\n" );
 			break;
 		}
-		//slabFree( object );
+		slabFree( object );
 		//if( object == 0 )
 		//{
 		//	printf( "Free failed" );

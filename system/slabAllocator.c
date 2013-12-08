@@ -406,7 +406,7 @@ uint slabFree( void* objectToFree )
 			{
 				struct BufferList* currentBuffer =(struct BufferList*) currentSlab->firstObj;
 				int counter = 0;
-				while( currentBuffer != NULL && counter < currentSlab->nbTotal )
+				while( currentBuffer != NULL && counter <= currentSlab->nbTotal )
 				{
 
 					if( currentBuffer->pObject == objectToFree )
@@ -435,7 +435,7 @@ uint slabFree( void* objectToFree )
 						return 1;	// we did our job ^_^
 					}
 					
-					currentBuffer = (struct BufferList *)((char *)(currentBuffer) + sizeof( struct BufferList*));
+					currentBuffer = (struct BufferList *)((char*)(currentBuffer) + sizeof( struct BufferList) + cacheToUse->allocSize);
 					++counter;
 				}
 
