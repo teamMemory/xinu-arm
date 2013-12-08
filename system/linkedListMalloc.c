@@ -192,8 +192,8 @@ void  printFrag(void)
 	}
 	frag.extFrag = POOL_SIZE - allocatedMem;
 	frag.intFrag = intFrag;
-	printf("Internal Frag: %d\n", frag.intFrag);
-	printf("External Frag: %d\n" , frag.extFrag);
+	printf("Internal Frag: %f\n", ((double)frag.intFrag) / frag.memSize);
+	printf("External Frag: %f\n" , ((double)frag.extFrag) / frag.memSize);
 	printf("Memory Size: %d\n",  frag.memSize);
 }
 
