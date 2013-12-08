@@ -289,15 +289,22 @@ uint slabDestroy(struct Slab* slab)
 			}
 			
 			struct MemRange* currentFreeMem = freeMem;
-			while( currentFreeMem->pNext != NULL )	// need to get to end of list
+			if( currentFreeMem == NULL )
 			{
-				currentFreeMem = currentFreeMem->pNext;
+				freeMem = currentMem;
 			}
-			currentFreeMem->pNext = currentMem;
-			currentMem->pPrev = currentFreeMem;
-			currentMem->pNext = NULL;		// End of list
+			else
+			{
+				while( currentFreeMem->pNext != NULL )	// need to get to end of list
+				{
+					currentFreeMem = currentFreeMem->pNext;
+				}
+				currentFreeMem->pNext = currentMem;
+				currentMem->pPrev = currentFreeMem;
+				currentMem->pNext = NULL;		// End of list
 
-			currentSlab = currentSlab->pNext;	
+				currentSlab = currentSlab->pNext;	
+			}
 		}while( currentSlab != NULL && startSlab != currentSlab );
 	}
 
