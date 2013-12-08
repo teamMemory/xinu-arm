@@ -79,6 +79,7 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 	if( current==NULL) 
 		{
 			printf("There is not enough memory to create the slab!!!\n");
+			return NULL;
 	}else{
 		//Get the last slab in the cache
 		lastSlab=cache->pSlabList;
@@ -100,7 +101,7 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 		slabEl->pPrev=lastSlab;
 		cache->freeObj+=cache->slabObjCnt;
 
-				usedrange=usedMem;
+		usedrange=usedMem;
 		while( usedrange->pNext != NULL )
 		{
 			usedrange=usedrange->pNext;
@@ -126,6 +127,9 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 			current->nbBytes=size+sizeof(struct MemRange);
 			current->pSlab=slabEl;
 		}else{
+			if (current->pPrev!=NULL)current->pPrev->pNext=current->pNext;
+			if (current->pNext!=NULL)current->pNext->pPrev=current->pPrev;
+			if ((current->pPrev==NULL)&&(current->pNext==NULL)) freeMem=NULL;
 		//Unmap the used memory from the free list
 		current->pPrev=usedrange;
 		usedrange->pNext=current;
@@ -160,6 +164,7 @@ struct SlabCacheList *createCache(uint objSize)
 	if( current==NULL) 
 		{
 			printf("There is not enough memory to create the cache!!!\n");
+			return NULL;
 	}else{
 		lastCache=cacheHead;
 		
@@ -214,6 +219,9 @@ struct SlabCacheList *createCache(uint objSize)
 			current->nbBytes=size+sizeof(struct MemRange);
 			current->pSlab=slabEl;
 		}else{
+			if (current->pPrev!=NULL)current->pPrev->pNext=current->pNext;
+			if (current->pNext!=NULL)current->pNext->pPrev=current->pPrev;
+			if ((current->pPrev==NULL)&&(current->pNext==NULL)) freeMem=NULL;
 		//Unmap the used memory from the free list
 		current->pPrev=usedrange;
 		usedrange->pNext=current;
@@ -344,6 +352,7 @@ void* slabAlloc(uint elSize)
 	if( cacheToUse == NULL )
 	{
 		cacheToUse = createCache(elSize);
+		if (cacheToUse == NULL) return NULL;
 	}
 	
 	currentSlab = cacheToUse->pSlabList;	// need to get way of getting this....
@@ -374,7 +383,9 @@ void* slabAlloc(uint elSize)
 		}
 	}else{
 		struct Slab* newSlab = createNewSlab(cacheToUse);
-		struct BufferList* headBuffer = newSlab->pFree;
+		struct BufferList* headBuffer;
+		if (newSlab==NULL) return NULL;
+		headBuffer = newSlab->pFree;
 		memoryToReturn = headBuffer->pObject;		// first object on list is always going to be free, now we have to take if off the list (works like a queue
 		headBuffer->pNext->pPrev = headBuffer->pPrev;	// reordering the list
 		headBuffer->pPrev->pNext = headBuffer->pNext;
