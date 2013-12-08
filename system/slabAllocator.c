@@ -78,7 +78,7 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 	}
 	if( current==NULL) 
 		{
-			printf("There is not enough memory to create the cache!!!\n");
+			printf("There is not enough memory to create the slab!!!\n");
 	}else{
 		//Get the last slab in the cache
 		lastSlab=cache->pSlabList;
@@ -115,7 +115,7 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 			freeNode->nbBytes=current->nbBytes-size-sizeof(struct MemRange);
 			freeNode->pSlab=NULL;
 			freeNode->pNext=NULL;
-			freeNode->pPrev=current->pPrev;
+			freeNode->pPrev=NULL;
 
 			if (current->pPrev!=NULL)current->pPrev->pNext=freeNode;
 			else freeMem=freeNode;
@@ -203,7 +203,7 @@ struct SlabCacheList *createCache(uint objSize)
 			freeNode->nbBytes=current->nbBytes-size-sizeof(struct MemRange);
 			freeNode->pSlab=NULL;
 			freeNode->pNext=NULL;
-			freeNode->pPrev=current->pPrev;
+			freeNode->pPrev=NULL;
 
 			if (current->pPrev!=NULL)current->pPrev->pNext=freeNode;
 			else freeMem=freeNode;
@@ -227,6 +227,7 @@ struct SlabCacheList *createCache(uint objSize)
 }
 
 // Destroys a cache and all slabs inside of it
+
 uint cacheDestroy(struct SlabCacheList *pCache)
 {
 	struct Slab* startSlab = pCache->pSlabList;
@@ -286,8 +287,9 @@ uint slabDestroy(struct Slab* slab)
 			}
 			currentFreeMem->pNext = currentMem;
 			currentMem->pPrev = currentFreeMem;
-			
-			currentSlab = currentSlab->pNext;
+			currentMem->pNext = NULL;		// End of list
+
+			currentSlab = currentSlab->pNext;	
 		}while( currentSlab != NULL && startSlab != currentSlab );
 	}
 
@@ -371,19 +373,16 @@ void* slabAlloc(uint elSize)
 			currentSlab = currentSlab->pNext;
 		}
 	}else{
-		struct BufferList* headBuffer = createNewSlab(cacheToUse)->pFree;
-		memoryToReturn = headBuffer->pObject;		// first object on list is always going to be free, now we have to take if off the list (works like a queue)
-
-		if( headBuffer->pNext != NULL )
-		{
-			headBuffer->pNext->pPrev = headBuffer->pPrev;	// reordering the list
-			headBuffer->pPrev->pNext = headBuffer->pNext;
-		}
-		currentSlab->pFree = headBuffer->pNext;
+		struct Slab* newSlab = createNewSlab(cacheToUse);
+		struct BufferList* headBuffer = newSlab->pFree;
+		memoryToReturn = headBuffer->pObject;		// first object on list is always going to be free, now we have to take if off the list (works like a queue
+		headBuffer->pNext->pPrev = headBuffer->pPrev;	// reordering the list
+		headBuffer->pPrev->pNext = headBuffer->pNext;
+		newSlab->pFree = headBuffer->pNext;
 		headBuffer->pNext = NULL;
 		headBuffer->pPrev = NULL;
 		cacheToUse->freeObj--;
-		currentSlab->nbFree--;
+		newSlab->nbFree--;
 	}
 
 	// for now just returning rootnodes memory region
@@ -391,7 +390,9 @@ void* slabAlloc(uint elSize)
 	return memoryToReturn;
 }
 
+
 // Frees up memory
+
 uint slabFree( void* objectToFree )
 {
 	struct SlabCacheList* cacheToUse = cacheHead;	// cache space is non-contiguous by each slab is, by checking slab ranges we can search for the node
@@ -404,9 +405,10 @@ uint slabFree( void* objectToFree )
 			if( currentRange->base <= objectToFree && (char *)currentRange->base + currentRange->nbBytes >= objectToFree)	// if within range need to check...
 			{
 				struct BufferList* currentBuffer =(struct BufferList*) currentSlab->firstObj;
-				
-				while( currentBuffer != NULL )
+				int counter = 0;
+				while( currentBuffer != NULL && counter < currentSlab->nbTotal )
 				{
+
 					if( currentBuffer->pObject == objectToFree )
 					{
 						if( currentSlab->nbFree > 0 )
@@ -419,6 +421,8 @@ uint slabFree( void* objectToFree )
 						else
 						{
 							currentSlab->pFree = currentBuffer;
+							currentBuffer->pNext = currentBuffer;
+							currentBuffer->pPrev = currentBuffer;
 						}
 						
 						++currentSlab->nbFree;
@@ -432,6 +436,7 @@ uint slabFree( void* objectToFree )
 					}
 					
 					currentBuffer = (struct BufferList *)((char *)(currentBuffer) + sizeof( struct BufferList*));
+					++counter;
 				}
 
 			}
