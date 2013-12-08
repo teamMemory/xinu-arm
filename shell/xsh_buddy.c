@@ -49,7 +49,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	
 	slabInit();
 	startTime = clkticks;
-	for( i = 0; i < 1000000; ++i )
+	for( i = 0; i < 100; ++i )
 	{
 		printf("At malloc pos %d: ", i );
 		void* object = slabAlloc( sizeof(struct testStruct) );
