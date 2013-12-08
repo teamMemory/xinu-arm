@@ -70,13 +70,11 @@ void * insertNode(unsigned int userBytes)
 		return NULL;
 	}
 	cur = (struct Node *)root;
-	printf("ROOT INITIAL: %p\n",root);
 	sizeStruct = sizeof(struct Node);
 	poolBytesUsed = 0;
 	while(cur != NULL){
 		if(!cur->taken && cur->lenAvail >= userBytes)
 		{
-			printf("replacing free block\n");
 			cur->lenUsed = userBytes;
 			cur->taken = TRUE;
 			return cur->mem;
@@ -86,7 +84,6 @@ void * insertNode(unsigned int userBytes)
 			poolBytesUsed += (sizeStruct + cur->lenAvail);
 			cur = cur->next;
 		}
-		printf("cur addr: %p\n)", cur);
 	}
 	cur = (struct Node *) root;
 	while (cur->next != NULL){
@@ -104,7 +101,6 @@ void * insertNode(unsigned int userBytes)
 		newNode->lenUsed = userBytes;
 		newNode->lenAvail = userBytes;
 		newNode->mem = newNode + sizeof(struct Node);
-		printf("next: %p  len: %d taken: %d\n",cur->next, cur->lenAvail, cur->taken);
 		return newNode->mem;
 	}
 	else
@@ -185,8 +181,6 @@ void  printFrag(void)
 		do{
 			intFrag += ((curr->lenAvail - curr->lenUsed) + sizeof(struct Node));
 			allocatedMem += (curr->lenAvail + sizeof(struct Node));
-			printf("intFrag: %d\n", intFrag);
-			printf("allocated mem: %d\n", allocatedMem);
 			curr = curr->next;
 		}while (curr != NULL);
 	}

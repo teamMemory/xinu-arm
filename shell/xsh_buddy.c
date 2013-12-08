@@ -31,6 +31,10 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	int i;
 	struct MemFrag frag;
 	ulong startTime = clkticks;
+	
+	// initialization for buddy Malloc
+	printf( "---------------------Running Buddy Malloc Test----------------");
+	
 	buddyMalloc(1024);
 	for( i = 0; i < 100; ++i )
 	{
@@ -47,7 +51,9 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printMemUsage();
 	printf("Malloced memory in time of %d, %d\n", endTime);
 	
-	slabInit();
+	
+	printf( "---------------------Running SLAB Malloc Test----------------");
+	slabInit();	// SLAB initialzation
 	startTime = clkticks;
 	for( i = 0; i < 100; ++i )
 	{
@@ -77,31 +83,30 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	
 	printMemUsage();
 
+	
+	printf( "---------------------Running Linked List Malloc Test----------------");
 	////////////////////////////////////////////
 	///// Linked List Test
 	////////////////////////////////////////////
-    //
-	//int k;
-	//for(k=0; k < 1000; k++)
-	//{
-	//	void * loc;
-	//	//printf("Allocating memory\n");
-	//	loc = linkedListMalloc(k % 100);
-	//	if(loc == NULL){
-	//		printf("%d failed\n",k);
-	//	}
-	//	//printf("Memory allocated\n");
-	//	//printf("Deallocating memory\n");
-	//	removeNode(loc);
-	//	//printf("Memory deallocated\n");
-	//	//printf("Freeing memory\n");
-	//	freeMemory();
-	//	//printf("MemoryFreed\n");
-	//}	
-	//frag = getFrag();
-	//printf("\nInternal Frag: %i\n", frag.intFrag);
-	//printf("External Frag: %i\n", frag.extFrag);
-	//printf("Total memory: %i\n\n", frag.memSize);
+    
+	int k;
+	for(k=1; k < 100; k++)
+	{
+		void * loc;
+		//printf("Allocating memory\n");
+		loc = linkedListMalloc(k);
+		if(loc == NULL){
+			printf("%d failed\n",k);
+		}
+		//printf("Memory allocated\n");
+		//printf("Deallocating memory\n");
+		removeNode(loc);
+		//printf("Memory deallocated\n");
+		//printf("Freeing memory\n");
+		freeMemory();
+		//printf("MemoryFreed\n");
+	}	
+	printFrag();
 
 	return 0;
 }
