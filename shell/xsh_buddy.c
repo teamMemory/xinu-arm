@@ -66,31 +66,31 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	
 	printMemUsage();
 
-	//////////////////////////////////////////
-	/// Linked List Test
-	//////////////////////////////////////////
-
-	int k;
-	for(k=0; k < 1000; k++)
-	{
-		void * loc;
-		//printf("Allocating memory\n");
-		loc = linkedListMalloc(k % 100);
-		if(loc == NULL){
-			printf("%d failed\n",k);
-		}
-		//printf("Memory allocated\n");
-		//printf("Deallocating memory\n");
-		removeNode(loc);
-		//printf("Memory deallocated\n");
-		//printf("Freeing memory\n");
-		freeMemory();
-		//printf("MemoryFreed\n");
-	}	
-	frag = getFrag();
-	printf("\nInternal Frag: %i\n", frag.intFrag);
-	printf("External Frag: %i\n", frag.extFrag);
-	printf("Total memory: %i\n\n", frag.memSize);
+	////////////////////////////////////////////
+	///// Linked List Test
+	////////////////////////////////////////////
+    //
+	//int k;
+	//for(k=0; k < 1000; k++)
+	//{
+	//	void * loc;
+	//	//printf("Allocating memory\n");
+	//	loc = linkedListMalloc(k % 100);
+	//	if(loc == NULL){
+	//		printf("%d failed\n",k);
+	//	}
+	//	//printf("Memory allocated\n");
+	//	//printf("Deallocating memory\n");
+	//	removeNode(loc);
+	//	//printf("Memory deallocated\n");
+	//	//printf("Freeing memory\n");
+	//	freeMemory();
+	//	//printf("MemoryFreed\n");
+	//}	
+	//frag = getFrag();
+	//printf("\nInternal Frag: %i\n", frag.intFrag);
+	//printf("External Frag: %i\n", frag.extFrag);
+	//printf("Total memory: %i\n\n", frag.memSize);
 
 	return 0;
 }
