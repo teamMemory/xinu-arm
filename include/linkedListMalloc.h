@@ -31,6 +31,6 @@ void * linkedListMalloc(unsigned int nbytes);
 void * insertNode(unsigned int nbytes);
 void removeNode(void * loc);
 void * initList(unsigned int nbytes);
-void freeMemory();
-struct MemFrag getFrag();
+void freeMemory(void);
+void printFrag(void);
 #endif //_LINKEDLISTMALLOC_H_

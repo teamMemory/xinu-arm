@@ -34,32 +34,23 @@ int init = FALSE;	//states whether the allocator has been initialized.
 void * initList(unsigned int userBytes)
 {
 	
-	int nodeSize, totalSize;
+	int nodeSize,  totalSize;
 	struct Node * firstNode;
 	//allocate a pool of memory
 	root = malloc(POOL_SIZE);
-	
 	nodeSize = sizeof(struct Node);
 	if (userBytes + nodeSize > POOL_SIZE)
 	{
 		printf("Block too large to allocate.\n");
 		return NULL;
 	}
-	printf("	Root Address: %p\n" , root);
-	printf("	Node Size: %i\n" , nodeSize);
-	printf("	USER MEM SIZE: %i\n" , userBytes);
 	totalSize = nodeSize + userBytes;
-	
 	firstNode = (struct Node *) root;
-
 	firstNode->mem = firstNode + nodeSize;
-	printf("	USER MEM ADDRESS: %p\n" , firstNode->mem);
-
 	firstNode->next = NULL;
 	firstNode->lenUsed = userBytes;
 	firstNode->lenAvail = userBytes;
 	firstNode->taken = TRUE;
-
 	//return the root location plus the offset of the struct
 	//to get the user's memory location
 	return firstNode->mem;
@@ -73,15 +64,19 @@ void * insertNode(unsigned int userBytes)
 {
 	int sizeStruct, poolBytesUsed, sizeNeeded;
 	struct Node * newNode, * cur;
+	if(root == NULL)
+	{
+		printf("uninitalized\n");
+		return NULL;
+	}
 	cur = (struct Node *)root;
+	printf("ROOT INITIAL: %p\n",root);
 	sizeStruct = sizeof(struct Node);
 	poolBytesUsed = 0;
-	while(cur->next != NULL)
-	{
-		//cast cur to (struct *)?
-		
+	while(cur != NULL){
 		if(!cur->taken && cur->lenAvail >= userBytes)
 		{
+			printf("replacing free block\n");
 			cur->lenUsed = userBytes;
 			cur->taken = TRUE;
 			return cur->mem;
@@ -91,20 +86,25 @@ void * insertNode(unsigned int userBytes)
 			poolBytesUsed += (sizeStruct + cur->lenAvail);
 			cur = cur->next;
 		}
+		printf("cur addr: %p\n)", cur);
+	}
+	cur = (struct Node *) root;
+	while (cur->next != NULL){
+		cur = cur->next;
 	}
 	//cur points to the last existing node
 	sizeNeeded = userBytes + sizeStruct;
 	//only allocate a new Node if we have the space to do so
 	if((sizeNeeded + poolBytesUsed) < POOL_SIZE)
 	{
-		cur->next = cur + sizeNeeded;
+		cur->next = cur + sizeStruct + cur->lenAvail;
 		newNode = cur->next;
 		newNode->next = NULL;
 		newNode->taken = TRUE;
 		newNode->lenUsed = userBytes;
 		newNode->lenAvail = userBytes;
-		newNode->mem = cur + sizeof(struct Node);
-		
+		newNode->mem = newNode + sizeof(struct Node);
+		printf("next: %p  len: %d taken: %d\n",cur->next, cur->lenAvail, cur->taken);
 		return newNode->mem;
 	}
 	else
@@ -114,7 +114,6 @@ void * insertNode(unsigned int userBytes)
 		printf("Block too large to allocate.\n");
 		return NULL;
 	}
-
 }
 
 
@@ -145,7 +144,6 @@ void removeNode(void * loc)
 */
 void * linkedListMalloc(unsigned int nbytes)
 {	
-	void * mem;
 	if(nbytes <= 0)		//Do nothing for 0 or negative memory 
 	{
 		return NULL;
@@ -158,17 +156,14 @@ void * linkedListMalloc(unsigned int nbytes)
 	else			//root has already been initialized
 	{
 		//insert node and store user memory address
-		mem = insertNode(nbytes);
-
-		//return ptr to user memory address
-		return mem;
+		return insertNode(nbytes);
 	}
 }
 
 /*
 *	Frees the memory pool
 */
-void freeMemory()
+void freeMemory(void)
 {
 	free(root);
 }
@@ -176,29 +171,29 @@ void freeMemory()
 /*
 *	Returns the memory fragmentation of the pool
 */
-struct MemFrag getFrag()
+void  printFrag(void)
 {
-
 	struct MemFrag frag;
 	struct Node * curr;
 	unsigned int intFrag, allocatedMem;
 	intFrag = 0;
 	allocatedMem = 0;
 	frag.memSize = POOL_SIZE;
-	
 	curr = (struct Node *)root;
-	if (curr == NULL)
+	if(curr != NULL)
 	{
-		return frag;
+		do{
+			intFrag += ((curr->lenAvail - curr->lenUsed) + sizeof(struct Node));
+			allocatedMem += (curr->lenAvail + sizeof(struct Node));
+			printf("intFrag: %d\n", intFrag);
+			printf("allocated mem: %d\n", allocatedMem);
+			curr = curr->next;
+		}while (curr != NULL);
 	}
-	do{
-		intFrag += (curr->lenAvail - curr->lenUsed);
-		allocatedMem += curr->lenAvail;
-		curr = curr->next;
-	}while (curr->next != NULL);
-
 	frag.extFrag = POOL_SIZE - allocatedMem;
 	frag.intFrag = intFrag;
-	return frag;
+	printf("Internal Frag: %d\n", frag.intFrag);
+	printf("External Frag: %d\n" , frag.extFrag);
+	printf("Memory Size: %d\n",  frag.memSize);
 }
 
