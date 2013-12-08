@@ -31,15 +31,15 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	int i;
 	struct MemFrag frag;
 	ulong startTime = clkticks;
-	//buddyMalloc(1024);
-	//for( i = 0; i < 100; ++i )
-	//{
-	//	if( buddyMalloc(5) == 0 )
-	//	{
-	//		printf( "Buddy Malloc failed\n" );
-	//		break;
-	//	}
-	//}
+	buddyMalloc(1024);
+	for( i = 0; i < 100; ++i )
+	{
+		if( buddyMalloc(5) == 0 )
+		{
+			printf( "Buddy Malloc failed at: %d\n", i );
+			break;
+		}
+	}
 	
 	ulong endTime = clkticks;
 	endTime -= startTime;
@@ -49,7 +49,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	
 	slabInit();
 	startTime = clkticks;
-	for( i = 0; i < 100; ++i )
+	for( i = 0; i < 1000000; ++i )
 	{
 		printf("At malloc pos %d: ", i );
 		void* object = slabAlloc( sizeof(struct testStruct) );
@@ -60,10 +60,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 			break;
 		}
 		slabFree( object );
-		//if( object == 0 )
-		//{
-		//	printf( "Free failed" );
-		//}
+		slabFree( object2 );
 	}
 	printMemUsage();
 	endTime = clkticks;
@@ -73,7 +70,7 @@ shellcmd xsh_buddy(int nargs, char *args[])
 		
 
 	printMemUsage();
-	//buddyDealloc();
+	buddyDealloc();
 	
 	slabCleanup();
 	printf("Dealloced memory\n");
