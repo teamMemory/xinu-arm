@@ -498,7 +498,37 @@ struct MemFragFloat calculateFragmentation()
 
 float calculateInternalFragmentation()
 {
-	
+	struct SlabCacheList *cache;
+	struct MemRange *used;
+	uint objUsedMem=0;
+	uint generalUsedMem=0;
+	cache=cacheHead;
+	if (cache->pPrev==NULL) 
+		if(cache->pNext!=NULL)  cache=cache->pNext;
+		else {
+			printf("No allocated caches!!! ");
+			return 0;
+		}
+	while (cache!=NULL)
+	{
+	struct Slab *slablist;
+	uint slabcount=0;
+	slablist=cache->pSlabList;
+	while (slablist!=NULL) 
+		{
+			++slabcount;
+			slablist=slablist->pNext;
+		}
+	objUsedMem+=slabcount*cache->slabObjCnt*(cache->allocSize-cache->objSize)+cache->freeObj*cache->objSize;
+	cache=cache->pNext;
+	}
+	used=usedMem;
+	while(used!=NULL)
+	{
+		generalUsedMem+=used->nbBytes;
+		used=used->pNext;
+	}
+	return objUsedMem / generalUsedMem;
 }
 
 float calculateExternalFragmentation()
