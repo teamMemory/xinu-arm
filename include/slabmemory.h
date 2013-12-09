@@ -87,7 +87,7 @@ uint slabDestroy(struct Slab* slab);
 void slabCleanup();
 
 // Fragmentation Checking Functions
-struct MemFragFloat* calculateFragmentation();
-int calculateInternalFragmentation();
-int calculateExternalFragmentation();
+struct MemFragFloat calculateFragmentation();
+float calculateInternalFragmentation();
+float calculateExternalFragmentation();
 #endif  /*_SLABMEMORY_H_*/

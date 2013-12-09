@@ -55,20 +55,26 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printf( "---------------------Running SLAB Malloc Test----------------\n");
 	slabInit();	// SLAB initialzation
 	startTime = clkticks;
-	for( i = 0; i < 100; ++i )
+	long longArr[ 20 ];
+	for( i = 0; i < 20; ++i )
 	{
 		printf("At malloc pos %d: ", i );
 		void* object = slabAlloc( sizeof(struct testStruct) );
-		void* object2 = slabAlloc( sizeof(long) );
+		longArr[ i ] = slabAlloc( sizeof(long) );
 		if( object == 0  )
 		{
 			printf( "Slab Malloc failed\n" );
 			break;
 		}
-		slabFree( object );
-		slabFree( object2 );
 	}
+	for( i = 0; i < 20; ++i )	// should cause external fragmentation
+	{
+		free( (void*)(longArr[ i ] ) );
+	}
+	
 	printMemUsage();
+	struct MemFragFloat fragmentationAmount = calculateFragmentation();
+	printf("External Fragmentation: %f , Internal Fragmentation: %f \n", fragmentationAmount.extFragPercentage, fragmentationAmount.intFragPercentage );
 	endTime = clkticks;
 	
 	endTime-=startTime;
