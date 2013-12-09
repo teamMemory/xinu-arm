@@ -528,7 +528,7 @@ float calculateInternalFragmentation()
 		generalUsedMem+=used->nbBytes;
 		used=used->pNext;
 	}
-	return objUsedMem / generalUsedMem;
+	return ((float)objUsedMem / (float)generalUsedMem );
 }
 
 float calculateExternalFragmentation()

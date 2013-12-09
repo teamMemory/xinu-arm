@@ -91,7 +91,8 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	printMemUsage();
 	struct MemFragFloat fragmentationAmount = calculateFragmentation();
 	int externalFragmentation = fragmentationAmount.extFragPercentage * 100;
-	printf("External Fragmentation: %d%%, Internal Fragmentation: %3.2f \n", externalFragmentation, fragmentationAmount.intFragPercentage );
+	int internalFragmentation = fragmentationAmount.intFragPercentage * 100;
+	printf("External Fragmentation: %d%%, Internal Fragmentation: %d%% \n", externalFragmentation, internalFragmentation );
 	endTime = clkticks;
 	
 	endTime-=startTime;
