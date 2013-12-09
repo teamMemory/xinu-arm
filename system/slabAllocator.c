@@ -502,5 +502,18 @@ float calculateInternalFragmentation()
 
 float calculateExternalFragmentation()
 {
+	MemRange* currRange = freeMem;
+	int largestMemoryBlock = 0;
+	int totalFreeMemory = 0;
+	while( currRange != NULL )
+	{
+		if( currRange->nbBytes > largestMemoryBlock )
+		{
+			largestMemoryBlock = currRange->nbBytes;
+		}
+		totalFreeMemory += currRange->nbBytes;
+		currRange = currRange->pNext;
+	}
 	
+	return 1 - (largestMemoryBlock / totalFreeMemory);
 }
