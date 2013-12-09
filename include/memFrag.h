@@ -13,4 +13,10 @@ struct MemFrag
 	unsigned int extFrag;
 	unsigned int memSize;
 };
+
+struct MemFragFloat
+{
+	float intFragPercentage;
+	float extFragPercentage;
+};
 #endif //_FRAGSTRUCT_H_

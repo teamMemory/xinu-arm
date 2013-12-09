@@ -9,7 +9,7 @@
 #define _SLABMEMORY_H_
 
 #include <stddef.h>
-
+#include <memFrag.h>
 
 //typedef enum {false,true}bool;
 #define TOTAL_MEMORY 10240	// 10 kb
@@ -85,4 +85,9 @@ struct BufferList* createBuffer(void *base,uint objSize);
 struct Slab * createNewSlab(struct  SlabCacheList *cache);
 uint slabDestroy(struct Slab* slab);
 void slabCleanup();
+
+// Fragmentation Checking Functions
+struct MemFragFloat* calculateFragmentation();
+int calculateInternalFragmentation();
+int calculateExternalFragmentation();
 #endif  /*_SLABMEMORY_H_*/

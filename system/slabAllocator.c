@@ -487,3 +487,20 @@ void slabCleanup()
 	
 	free( memBlock );
 }
+
+struct MemFragFloat* calculateFragmentation()
+{
+	struct MemFragFloat* fragmentationAmount;
+	fragmentationAmount.intFragPercentage = calculateInternalFragmentation();                                  
+	fragmentationAmount.extFragPercentage = calculateExternalFragmentation();                                  
+}
+
+float calculateInternalFragmentation()
+{
+	
+}
+
+float calculateExternalFragmentation()
+{
+	
+}
