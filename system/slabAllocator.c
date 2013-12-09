@@ -516,5 +516,5 @@ float calculateExternalFragmentation()
 		currRange = currRange->pNext;
 	}
 	
-	return 1 - (largestMemoryBlock / totalFreeMemory);
+	return 1.0f - ((float)largestMemoryBlock / (float)totalFreeMemory);
 }

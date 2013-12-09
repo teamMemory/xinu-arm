@@ -26,6 +26,18 @@ struct testStruct
 	int i;
 };
 
+struct testStruct2
+{
+	int a;
+	double b;
+	double c;
+	double d;
+	double e;
+	double f;
+	char g;
+	char h;
+};
+
 shellcmd xsh_buddy(int nargs, char *args[])
 {
 	int i;
@@ -56,11 +68,14 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	slabInit();	// SLAB initialzation
 	startTime = clkticks;
 	long longArr[ 20 ];
+	long intArr[ 20 ];
 	for( i = 0; i < 20; ++i )
 	{
 		printf("At malloc pos %d: ", i );
 		void* object = slabAlloc( sizeof(struct testStruct) );
 		longArr[ i ] = slabAlloc( sizeof(long) );
+		void* object2 = slabAlloc( sizeof(struct testStruct2) );
+		intArr[ i ] = slabAlloc( sizeof(int) );
 		if( object == 0  )
 		{
 			printf( "Slab Malloc failed\n" );
@@ -69,12 +84,14 @@ shellcmd xsh_buddy(int nargs, char *args[])
 	}
 	for( i = 0; i < 20; ++i )	// should cause external fragmentation
 	{
-		free( (void*)(longArr[ i ] ) );
+		slabFree( (void*)(longArr[ i ] ) );
+		slabFree( (void*)(intArr[ i ] ) );
 	}
 	
 	printMemUsage();
 	struct MemFragFloat fragmentationAmount = calculateFragmentation();
-	printf("External Fragmentation: %f , Internal Fragmentation: %f \n", fragmentationAmount.extFragPercentage, fragmentationAmount.intFragPercentage );
+	int externalFragmentation = fragmentationAmount.extFragPercentage * 100;
+	printf("External Fragmentation: %d%%, Internal Fragmentation: %3.2f \n", externalFragmentation, fragmentationAmount.intFragPercentage );
 	endTime = clkticks;
 	
 	endTime-=startTime;
