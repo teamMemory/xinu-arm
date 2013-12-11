@@ -41,7 +41,7 @@ bool buddyAllocNodePool(uint maxDepth);
 struct buddynode* buddyNodeFromPool(uint offsetFromNext);
 bool buddySplit(struct buddynode* node);
 struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node);
-struct MemFrag buddyFragmentationAmount(void);
+struct MemFragment buddyFragmentationAmount(void);
 struct MemFrag buddyFragmentationAmount2(struct buddynode* node);
 
 #endif  /*_BUDDYMEMORY_H_*/

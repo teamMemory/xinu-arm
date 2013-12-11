@@ -571,14 +571,22 @@ void buddyDealloc(void)
 * BuddyFragmentationAmount - Go through the Nodes and get the fragmentation
 * @return Fragmentation - Struct with amount allocated and amount possible
 */
-struct MemFrag buddyFragmentationAmount(void)
+struct MemFragment buddyFragmentationAmount(void)
 {
-	return buddyFragmentationAmount2(rootNode);
+	struct MemFragment memFragment;
+	struct MemFrag mem = buddyFragmentationAmount2(rootNode);
+	unsigned free = pageSize - mem.memSize;
+
+	memFragment.intFragPercentage = 1 - ((float)mem.intFrag / (float)mem.memSize);
+	memFragment.extFragPercentage = 1 - ((float)mem.extFrag / (float)free);
+
+	return memFragment;
 }
 
 struct MemFrag buddyFragmentationAmount2(struct buddynode* node)
 {
 	struct MemFrag fragmentation;
+	fragmentation.extFrag = 0;
 	fragmentation.intFrag = 0;
 	fragmentation.memSize = 0;
 
@@ -597,10 +605,31 @@ struct MemFrag buddyFragmentationAmount2(struct buddynode* node)
 			fragmentation.intFrag += leftFrag.intFrag;
 			fragmentation.memSize += leftFrag.memSize;
 
+			if( fragmentation.extFrag < leftFrag.extFrag )
+			{
+				fragmentation.extFrag = leftFrag.extFrag;
+			}
+
+
 			// Right
 			struct MemFrag rightFrag = buddyFragmentationAmount2( node->rightNode );
 			fragmentation.intFrag += rightFrag.intFrag;
 			fragmentation.memSize += rightFrag.memSize;
+
+			if( fragmentation.extFrag < rightFrag.extFrag )
+			{
+				fragmentation.extFrag = rightFrag.extFrag;
+			}
+		}
+		
+		// Current Node is a child node That is free
+		else
+		{
+			unsigned int sizeFreeNode = pageSize >> node->depth;
+			if( fragmentation.extFrag < sizeFreeNode )
+			{
+				fragmentation.extFrag = sizeFreeNode;
+			}
 		}
 	}
 
