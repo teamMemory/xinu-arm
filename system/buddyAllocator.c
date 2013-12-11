@@ -118,7 +118,7 @@ void* buddyAlloc(uint numBytes)
         int desiredDepth = MEMORY_DEPTH_REQUEST_ERROR;	// The desired depth for memory to be allocated
 
         // Calculate Desired Depth
-        uint depthSize = BUDDY_PAGE_SIZE;
+        uint depthSize = pageSize;
         while( depthSize >= numBytes )
         {
             depthSize >>= 1;
@@ -215,7 +215,7 @@ bool buddySplit(struct buddynode* node)
 			node->leftNode = leftNode;
 
 			// Right Child
-			uint offset = (uint)(BUDDY_PAGE_SIZE) >> childDepth;        // Offset from left to right memRegion
+			uint offset = (uint)(pageSize) >> childDepth;        // Offset from left to right memRegion
 
 			// Set Attributes 
 			rightNode->memRegion = (char*)node->memRegion + offset;
