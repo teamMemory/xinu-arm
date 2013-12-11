@@ -214,9 +214,9 @@ void test2()
 		startBuddy = clkticks;
 		buddyMalloc( 10240 );
 		// Initializing
-		for( i = 512; i > 0; --i )
+		for( i = 32; i > 0; --i )
 		{
-			void* object = buddyMalloc( i * 10 );
+			void* object = buddyMalloc( i * 4 );
 			
 			if( object == 0 ) 
 			{
@@ -227,11 +227,11 @@ void test2()
 		
 		buddyFrag = buddyFragmentationAmount();
 		
-		startSlab = clkticks;
+		startSlab = clkticks;	// slab cannot allocate more than 256...
 		slabInit();
-		for( i = 512; i > 0; --i )
+		for( i = 32; i > 0; --i )
 		{
-			void* object = slabAlloc( i * 10 );
+			void* object = slabAlloc( i * 4 );
 			if( object == 0 ) 
 			{
 				slabFail++;
@@ -242,9 +242,9 @@ void test2()
 		slabFrag = calculateFragmentation();
 			
 		startLinkedList = clkticks;
-		for( i = 512; i > 0; --i )
+		for( i = 32; i > 0; --i )
 		{
-			void* object = linkedListMalloc( i  * 10 );
+			void* object = linkedListMalloc( i  * 4 );
 			
 			if( object == 0 ) 
 			{
