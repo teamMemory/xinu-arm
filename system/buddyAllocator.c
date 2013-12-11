@@ -7,7 +7,7 @@
 #include "buddymemory.h"
 #include <stdlib.h>
 
-bool showDebugMSGS = TRUE;		// Show the debug messages as they arise
+bool showDebugMSGS = FALSE;		// Show the debug messages as they arise
 
 struct buddynode* rootNode;		// The root node of the tree of Nodes managing the allocated memory
 int maxDepth;				// Farthest possible depth, can be calculated based on Page Size

@@ -24,6 +24,7 @@ struct testStruct
 	char g;
 	char h;
 	int i;
+	int j;
 };
 
 struct testStruct2
@@ -62,7 +63,7 @@ void test1()
 		for( i = 0; i < 100; ++i )
 		{
 			void* object = buddyMalloc( sizeof( struct testStruct ) );
-			longArr[ i ] = buddyMalloc( sizeof(long) );
+			longArr[ i ] = buddyMalloc( sizeof(long long) );
 			void* object2 = buddyMalloc( sizeof(struct testStruct2) );
 			intArr[ i ] = buddyMalloc( sizeof(int) );
 			
@@ -97,7 +98,7 @@ void test1()
 		for( i = 0; i < 100; ++i )
 		{
 			void* object = slabAlloc( sizeof(struct testStruct) );
-			longArr[ i ] = slabAlloc( sizeof(long) );
+			longArr[ i ] = slabAlloc( sizeof(long long) );
 			void* object2 = slabAlloc( sizeof(struct testStruct2) );
 			intArr[ i ] = slabAlloc( sizeof(int) );
 			if( object == 0 ) 
@@ -181,6 +182,9 @@ void test1()
 	printf( "Time Information\n" );
 	printf( "Buddy: %d\tSlab:%d\tLinked List: %d\t\n", totalBuddy, totalSlab, totalLinkedList );
 	printf( "Buddy Fail: %d\tSlab Fail:%d\tLinked List Fail: %d\t\n", buddyFail, slabFail, linkedListFail );
+	printf( "Fragmentation\n" );
+	printf( "Slab Internal: %d Slab External: %d\n", (int)(slabFrag.intFragPercentage * 100), (int)(slabFrag.extFragPercentage * 100) );
+	printf( "Size of Struct 1: %d\tSize of long: %d\tSize of Struct 2: %d\tSize of int: %d\n", sizeof(struct testStruct), sizeof(long long), sizeof(struct testStruct2), sizeof(int));
 }
 
 shellcmd xsh_buddy(int nargs, char *args[])
