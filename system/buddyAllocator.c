@@ -571,9 +571,9 @@ void buddyDealloc(void)
 * BuddyFragmentationAmount - Go through the Nodes and get the fragmentation
 * @return Fragmentation - Struct with amount allocated and amount possible
 */
-struct MemFragment buddyFragmentationAmount(void)
+struct MemFragFloat buddyFragmentationAmount(void)
 {
-	struct MemFragment memFragment;
+	struct MemFragFloat memFragment;
 	struct MemFrag mem = buddyFragmentationAmount2(rootNode);
 	unsigned free = pageSize - mem.memSize;
 

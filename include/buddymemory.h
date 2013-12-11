@@ -19,12 +19,12 @@
 
 struct buddynode
 {
-        int isUsed;
+    int isUsed;
 	struct buddynode* leftNode;
 	struct buddynode* rightNode;
 	void* memRegion;
 	int depth;
-        uint allocationSize;
+    uint allocationSize;
 };
 
 // malloc and free operations
@@ -41,7 +41,7 @@ bool buddyAllocNodePool(uint maxDepth);
 struct buddynode* buddyNodeFromPool(uint offsetFromNext);
 bool buddySplit(struct buddynode* node);
 struct buddynode* buddyBestFit(uint desiredDepth, struct buddynode* node);
-struct MemFragment buddyFragmentationAmount(void);
+struct MemFragFloat buddyFragmentationAmount(void);
 struct MemFrag buddyFragmentationAmount2(struct buddynode* node);
 
 #endif  /*_BUDDYMEMORY_H_*/
