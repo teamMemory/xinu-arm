@@ -44,7 +44,7 @@ void test1()
 {
 	printf( "START TEST 1\n");
 
-	int TEST_AMOUNT = 100;
+	int TEST_AMOUNT = 1;
 	
 	long longArr[ 100 ];
 	int intArr[ 100 ];
@@ -294,7 +294,7 @@ void test3()
 	printf( "START TEST 3\n");
 	int TEST_AMOUNT = 100;
 	
-	long longArr[ 100 ];
+	struct testStruct* structArray[ 100 ];
 	int intArr[ 100 ];
 	int i,j = 0;
 	
@@ -310,25 +310,55 @@ void test3()
 		startBuddy = clkticks;
 		buddyMalloc( 10240 );
 		// Initializing
-		for( i = 10; i > 0; --i )
+		for( i = 0; i < 25; ++i )
 		{
-			void* object = buddyMalloc( i * 4 );
+			structArray[ i ] = buddyMalloc( sizeof( struct testStruct ) );
 			
-			if( object == 0 ) 
+			if( structArray[ i ] == 0 ) 
 			{
 				buddyFail++;
 			}
 		}
+		
+		for( i = 0; i < 10; ++i )
+		{
+			buddyFree( structArray[ i ] );
+		}
+		
+		for( i = 0; i < 25; ++i )
+		{
+			structArray[ i ] = buddyMalloc( sizeof( struct testStruct ) );
+			
+			if( structArray[ i ] == 0 ) 
+			{
+				buddyFail++;
+			}
+		}
+		
 		endBuddy = clkticks;
 		
 		buddyFrag = buddyFragmentationAmount();
 		
 		startSlab = clkticks;
 		slabInit();
-		for( i = 10; i > 0; --i )
+		for( i = 0; i < 25; ++i )
 		{
-			void* object = slabAlloc( i * 4 );
-			if( object == 0 ) 
+			structArray[ i ] = slabAlloc( sizeof( struct testStruct ) );
+			if( structArray[ i ] == 0 ) 
+			{
+				slabFail++;
+			}
+		}
+		
+		for( i = 0; i < 10; ++i )
+		{
+			slabFree( structArray[ i ] );
+		}
+		
+		for( i = 0; i < 25; ++i )
+		{
+			structArray[ i ] = slabAlloc( sizeof( struct testStruct ) );
+			if( structArray[ i ] == 0 ) 
 			{
 				slabFail++;
 			}
@@ -338,17 +368,34 @@ void test3()
 		slabFrag = calculateFragmentation();
 			
 		startLinkedList = clkticks;
-		for( i = 10; i > 0; --i )
+		for( i = 0; i < 25; ++i )
 		{
-			void* object = linkedListMalloc( i  * 4 );
+			structArray[ i ] = linkedListMalloc( sizeof( struct testStruct ) );
 			
-			if( object == 0 ) 
+			if( structArray[ i ] == 0 ) 
 			{
 				linkedListFail++;
 			}
 		}		
 		
+		for( i = 0; i < 10; ++i )
+		{
+			removeNode( structArray[ i ] );
+		}
+		
+		for( i = 0; i < 25; ++i )
+		{
+			structArray[ i ] = linkedListMalloc( sizeof( struct testStruct ) );
+			
+			if( structArray[ i ] == 0 ) 
+			{
+				linkedListFail++;
+			}
+		}
+		
 		endLinkedList = clkticks;
+		
+		linkedListFrag = printFrag();
 		
 		// get fragmentation here
 		buddyDealloc();
@@ -372,14 +419,16 @@ void test3()
 	printf( "Buddy: %d\tSlab:%d\tLinked List: %d\t\n", totalBuddy, totalSlab, totalLinkedList );
 	printf( "Buddy Fail: %d\tSlab Fail:%d\tLinked List Fail: %d\t\n", buddyFail, slabFail, linkedListFail );
 	printf( "Fragmentation\n" );
-	printf( "Buddy Internal: %d%% Buddy External: %d%%\nSlab Internal: %d%% Slab External: %d%%\n", (int)(buddyFrag.intFragPercentage*100), (int)(buddyFrag.extFragPercentage*100),
-		  (int)(slabFrag.intFragPercentage * 100), (int)(slabFrag.extFragPercentage * 100) );
+	printf( "Buddy Internal: %d%% Buddy External: %d%%\nSlab Internal: %d%% Slab External: %d%%\nLinked List Internal: %d%% Linked List External: %d%%\n", 
+		  (int)(buddyFrag.intFragPercentage*100), (int)(buddyFrag.extFragPercentage*100),
+		  (int)(slabFrag.intFragPercentage * 100), (int)(slabFrag.extFragPercentage * 100),
+		  (int)(linkedListFrag.intFragPercentage * 100), (int)(linkedListFrag.extFragPercentage * 100) );
 }
 
 shellcmd xsh_buddy(int nargs, char *args[])
 {
-	test1();
-	test2();
-	//test3();
+	//test1();
+	//test2();
+	test3();
 	return 0;
 }
