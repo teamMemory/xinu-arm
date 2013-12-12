@@ -78,7 +78,7 @@ struct Slab * createNewSlab(struct SlabCacheList *cache)
 	}
 	if( current==NULL) 
 		{
-			printf("There is not enough memory to create the slab!!!\n");
+			//printf("There is not enough memory to create the slab!!!\n");
 			return NULL;
 	}else{
 		//Get the last slab in the cache
@@ -163,7 +163,7 @@ struct SlabCacheList *createCache(uint objSize)
 	}
 	if( current==NULL) 
 		{
-			printf("There is not enough memory to create the cache!!!\n");
+			//printf("There is not enough memory to create the cache!!!\n");
 			return NULL;
 	}else{
 		lastCache=cacheHead;
@@ -506,7 +506,7 @@ float calculateInternalFragmentation()
 	if (cache->pPrev==NULL) 
 		if(cache->pNext!=NULL)  cache=cache->pNext;
 		else {
-			printf("No allocated caches!!! ");
+			//printf("No allocated caches!!! ");
 			return 0;
 		}
 	while (cache!=NULL)
@@ -519,7 +519,7 @@ float calculateInternalFragmentation()
 			++slabcount;
 			slablist=slablist->pNext;
 		}
-	objUsedMem+=slabcount*cache->slabObjCnt*(cache->allocSize-cache->objSize)+cache->freeObj*cache->objSize;
+	objUsedMem += slabcount * cache->slabObjCnt * (cache->allocSize-cache->objSize) + cache->freeObj * cache->objSize;
 	cache=cache->pNext;
 	}
 	used=usedMem;

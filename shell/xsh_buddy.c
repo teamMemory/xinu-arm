@@ -165,6 +165,8 @@ void test1()
 
 		endLinkedList = clkticks;
 		
+		linkedListFrag = printFrag();
+		
 		// get fragmentation here
 		buddyDealloc();
 		slabCleanup();
@@ -187,8 +189,10 @@ void test1()
 	printf( "Buddy: %d\tSlab:%d\tLinked List: %d\t\n", totalBuddy, totalSlab, totalLinkedList );
 	printf( "Buddy Fail: %d\tSlab Fail:%d\tLinked List Fail: %d\t\n", buddyFail, slabFail, linkedListFail );
 	printf( "Fragmentation\n" );
-	printf( "Buddy Internal: %d%% Buddy External: %d%%\nSlab Internal: %d%% Slab External: %d%%\n", (int)(buddyFrag.intFragPercentage*100), (int)(buddyFrag.extFragPercentage*100),
-		  (int)(slabFrag.intFragPercentage * 100), (int)(slabFrag.extFragPercentage * 100) );
+	printf( "Buddy Internal: %d%% Buddy External: %d%%\nSlab Internal: %d%% Slab External: %d%%\nLinked List Internal: %d%% Linked List External: %d%%\n", 
+		  (int)(buddyFrag.intFragPercentage*100), (int)(buddyFrag.extFragPercentage*100),
+		  (int)(slabFrag.intFragPercentage * 100), (int)(slabFrag.extFragPercentage * 100),
+		  (int)(linkedListFrag.intFragPercentage * 100), (int)(linkedListFrag.extFragPercentage * 100) );
 	printf( "Size of Struct 1: %d\tSize of long: %d\tSize of Struct 2: %d\tSize of int: %d\n", sizeof(struct testStruct), sizeof(long long), sizeof(struct testStruct2), sizeof(int));
 }
 
@@ -254,6 +258,8 @@ void test2()
 		
 		endLinkedList = clkticks;
 		
+		linkedListFrag = printFrag();
+		
 		// get fragmentation here
 		buddyDealloc();
 		slabCleanup();
@@ -276,8 +282,10 @@ void test2()
 	printf( "Buddy: %d\tSlab:%d\tLinked List: %d\t\n", totalBuddy, totalSlab, totalLinkedList );
 	printf( "Buddy Fail: %d\tSlab Fail:%d\tLinked List Fail: %d\t\n", buddyFail, slabFail, linkedListFail );
 	printf( "Fragmentation\n" );
-	printf( "Buddy Internal: %d%% Buddy External: %d%%\nSlab Internal: %d%% Slab External: %d%%\n", (int)(buddyFrag.intFragPercentage*100), (int)(buddyFrag.extFragPercentage*100),
-		  (int)(slabFrag.intFragPercentage * 100), (int)(slabFrag.extFragPercentage * 100) );
+	printf( "Buddy Internal: %d%% Buddy External: %d%%\nSlab Internal: %d%% Slab External: %d%%\nLinked List Internal: %d%% Linked List External: %d%%\n", 
+		  (int)(buddyFrag.intFragPercentage*100), (int)(buddyFrag.extFragPercentage*100),
+		  (int)(slabFrag.intFragPercentage * 100), (int)(slabFrag.extFragPercentage * 100),
+		  (int)(linkedListFrag.intFragPercentage * 100), (int)(linkedListFrag.extFragPercentage * 100) );
 }
 
 // Test 3 is meant to 

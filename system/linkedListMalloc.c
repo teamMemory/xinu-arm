@@ -41,7 +41,7 @@ void * initList(unsigned int userBytes)
 	nodeSize = sizeof(struct Node);
 	if (userBytes + nodeSize > POOL_SIZE)
 	{
-		printf("Block too large to allocate.\n");
+		//printf("Block too large to allocate.\n");
 		return NULL;
 	}
 	totalSize = nodeSize + userBytes;
@@ -66,7 +66,7 @@ void * insertNode(unsigned int userBytes)
 	struct Node * newNode, * cur;
 	if(root == NULL)
 	{
-		printf("uninitalized\n");
+		//printf("uninitalized\n");
 		return NULL;
 	}
 	cur = (struct Node *)root;
@@ -107,7 +107,7 @@ void * insertNode(unsigned int userBytes)
 	{
 		//in this case we can't allocate the memory because
 		//we don't have sufficient space in the pool.
-		printf("Block too large to allocate.\n");
+		//printf("Block too large to allocate.\n");
 		return NULL;
 	}
 }
@@ -130,7 +130,7 @@ void removeNode(void * loc)
 	}
 	else 
 	{
-		printf("Loc hasn't been allocated.\n");
+		//printf("Loc hasn't been allocated.\n");
 	}
 }
 
@@ -167,27 +167,35 @@ void freeMemory(void)
 /*
 *	Returns the memory fragmentation of the pool
 */
-void  printFrag(void)
+struct MemFragFloat  printFrag(void)
 {
-	struct MemFrag frag;
+	struct MemFragFloat frag;
 	struct Node * curr;
 	unsigned int intFrag, allocatedMem;
 	intFrag = 0;
 	allocatedMem = 0;
-	frag.memSize = POOL_SIZE;
 	curr = (struct Node *)root;
+	float largestValue = 0;
 	if(curr != NULL)
 	{
 		do{
-			intFrag += ((curr->lenAvail - curr->lenUsed) + sizeof(struct Node));
-			allocatedMem += (curr->lenAvail + sizeof(struct Node));
+			if( curr->taken == TRUE )
+			{
+				intFrag += ((curr->lenAvail - curr->lenUsed));
+				allocatedMem += (curr->lenAvail);
+			}
+			else if( curr->lenUsed > largestValue )
+			{
+				largestValue = curr->lenUsed;
+			}
 			curr = curr->next;
 		}while (curr != NULL);
 	}
-	frag.extFrag = POOL_SIZE - allocatedMem;
-	frag.intFrag = intFrag;
-	printf("Internal Frag: %d\n", frag.intFrag);
-	printf("External Frag: %d\n" , frag.extFrag);
-	printf("Memory Size: %d\n",  frag.memSize);
+	
+	int freeMemory = POOL_SIZE - allocatedMem;	// should be free...
+	frag.extFragPercentage = 1 - ( (float)largestValue / (float)freeMemory );
+	frag.intFragPercentage = (float)intFrag / (float)allocatedMem;
+	
+	return frag;
 }
 

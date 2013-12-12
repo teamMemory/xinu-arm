@@ -32,5 +32,5 @@ void * insertNode(unsigned int nbytes);
 void removeNode(void * loc);
 void * initList(unsigned int nbytes);
 void freeMemory(void);
-void printFrag(void);
+struct MemFragFloat printFrag(void);
 #endif //_LINKEDLISTMALLOC_H_
